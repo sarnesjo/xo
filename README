@@ -1,0 +1,7 @@
+# xo
+
+## Building
+
+    ./bootstrap
+    ./configure
+    make
