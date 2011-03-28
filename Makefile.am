@@ -5,5 +5,7 @@ xo_SOURCES = \
              insns.h \
              instruction.c \
              instruction.h \
+             invocation.c \
+             invocation.h \
              types.h \
              xo.c

@@ -30,4 +30,14 @@ typedef struct
   xo_instruction_impl impl;
 } xo_instruction;
 
+#pragma mark -
+#pragma mark invocation
+
+typedef struct
+{
+  xo_instruction *insn;
+  size_t r0;
+  size_t r1;
+} xo_invocation;
+
 #endif
