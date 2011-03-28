@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "insns.h"
+#include "xo.h"
 
 typedef enum
 {

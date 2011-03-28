@@ -7,7 +7,7 @@
 #pragma mark -
 #pragma mark machine state
 
-#define XO_MACHINE_STATE_NUM_REGS 8
+#define XO_MACHINE_STATE_NUM_REGS 4
 
 typedef struct
 {
@@ -29,5 +29,24 @@ typedef struct
   char *name;
   xo_instruction_impl impl;
 } xo_instruction;
+
+#pragma mark -
+#pragma mark invocation
+
+typedef struct
+{
+  xo_instruction *insn;
+  size_t r0;
+  size_t r1;
+} xo_invocation;
+
+#pragma mark -
+#pragma mark program
+
+typedef struct
+{
+  size_t num_invocations;
+  xo_invocation *invocations;
+} xo_program;
 
 #endif
