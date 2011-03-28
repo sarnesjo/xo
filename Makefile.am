@@ -7,5 +7,7 @@ xo_SOURCES = \
              instruction.h \
              invocation.c \
              invocation.h \
+             machine_state.c \
+             machine_state.h \
              types.h \
              xo.c
