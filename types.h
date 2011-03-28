@@ -7,7 +7,7 @@
 #pragma mark -
 #pragma mark machine state
 
-#define XO_MACHINE_STATE_NUM_REGS 8
+#define XO_MACHINE_STATE_NUM_REGS 4
 
 typedef struct
 {
