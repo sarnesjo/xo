@@ -40,4 +40,13 @@ typedef struct
   size_t r1;
 } xo_invocation;
 
+#pragma mark -
+#pragma mark program
+
+typedef struct
+{
+  size_t num_invocations;
+  xo_invocation *invocations;
+} xo_program;
+
 #endif
