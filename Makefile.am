@@ -10,4 +10,5 @@ xo_SOURCES = \
              machine_state.c \
              machine_state.h \
              types.h \
-             xo.c
+             xo.c \
+             xo.h
