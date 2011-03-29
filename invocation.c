@@ -14,8 +14,12 @@ void xo_invocation_invoke(const xo_invocation *inv, xo_machine_state *st)
   inv->insn->impl(st, inv->r0, inv->r1);
 }
 
-// TODO: don't print all operands for unary or nullary insns
 void xo_invocation_print(const xo_invocation *inv, const char *suffix)
 {
-  printf("%s %zu %zu%s", inv->insn->name, inv->r0, inv->r1, suffix);
+  if(inv->r0 != XO_NODE_DEPENDENCY_NONE && inv->r1 != XO_NODE_DEPENDENCY_NONE)
+    printf("%s %zu %zu%s", inv->insn->name, inv->r0, inv->r1, suffix);
+  else if(inv->r0 != XO_NODE_DEPENDENCY_NONE)
+    printf("%s %zu%s", inv->insn->name, inv->r0, suffix);
+  else
+    printf("%s%s", inv->insn->name, suffix);
 }
