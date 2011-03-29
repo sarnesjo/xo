@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "invocation.h"
 #include "machine_state.h"
@@ -33,4 +34,11 @@ void xo_program_run(const xo_program *prog, xo_machine_state *st)
       xo_machine_state_print(st, "\n");
     }
   }
+}
+
+void xo_program_print(const xo_program *prog, const char *suffix)
+{
+  for(size_t i = 0; i < prog->num_invocations; ++i)
+    xo_invocation_print(&prog->invocations[i], "\n");
+  printf("%s", suffix);
 }
