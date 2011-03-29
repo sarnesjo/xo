@@ -1,5 +1,7 @@
 bin_PROGRAMS = xo
 xo_SOURCES = \
+             combinatorics.c \
+             combinatorics.h \
              insns.c \
              insns.def \
              insns.h \
