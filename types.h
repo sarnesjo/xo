@@ -5,6 +5,34 @@
 #include <stdint.h>
 
 #pragma mark -
+#pragma mark node
+
+#define XO_NODE_DEPENDENCY_NONE ((size_t)-1)
+
+typedef struct
+{
+  size_t dependency0;
+  size_t dependency1;
+} xo_node;
+
+#pragma mark -
+#pragma mark graph
+
+typedef struct
+{
+  size_t num_nodes;
+  xo_node *nodes;
+} xo_graph;
+
+typedef xo_graph xo_node_variants;
+
+typedef struct
+{
+  size_t num_nodes;
+  xo_node_variants *nodes;
+} xo_supergraph;
+
+#pragma mark -
 #pragma mark machine state
 
 #define XO_MACHINE_STATE_NUM_REGS 4

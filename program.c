@@ -10,7 +10,7 @@ xo_program *xo_program_create(size_t num_invocations)
   if(prog)
   {
     prog->num_invocations = num_invocations;
-    prog->invocations = malloc(num_invocations * sizeof(xo_invocation));
+    prog->invocations = malloc(num_invocations * sizeof(xo_invocation)); // TODO: check this malloc
   }
   return prog;
 }
