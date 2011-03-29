@@ -11,6 +11,8 @@ xo_SOURCES = \
              invocation.h \
              machine_state.c \
              machine_state.h \
+             node.c \
+             node.h \
              program.c \
              program.h \
              types.h \
