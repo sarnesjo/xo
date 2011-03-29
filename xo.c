@@ -3,26 +3,38 @@
 #include <unistd.h>
 #include "graph.h"
 #include "insns.h"
+#include "program.h"
 #include "xo.h"
 
 typedef enum
 {
-  XO_ACTION_GENERATE_GRAPH,
+  XO_ACTION_GENERATE_PROGRAM,
   XO_ACTION_LIST_INSNS,
   XO_ACTION_SHOW_HELP,
   XO_ACTION_SHOW_VERSION,
 } xo_action;
 
-xo_action action = XO_ACTION_GENERATE_GRAPH;
+xo_action action = XO_ACTION_GENERATE_PROGRAM;
 int VERBOSITY;
 int NUM_INPUTS, NUM_INSNS;
 
-void graph_callback(const xo_graph *graph)
+void program_callback(const xo_program *prog)
 {
-  xo_graph_print(graph);
+  if(VERBOSITY > 0)
+    xo_program_print(prog, "--\n");
+  // TODO: test program
 }
 
-void generate_graph()
+void graph_callback(const xo_graph *graph)
+{
+  if(VERBOSITY > 0)
+    xo_graph_print(graph);
+
+  xo_program *prog = xo_program_create(NUM_INSNS); // TODO: we should keep track of this in a better fashion
+  xo_program_generate_from_graph(prog, graph, program_callback);
+}
+
+void generate_program()
 {
   xo_graph *graph = xo_graph_create(NUM_INPUTS+NUM_INSNS);
   xo_supergraph *supergraph = xo_supergraph_create(NUM_INPUTS+NUM_INSNS, NUM_INPUTS);
@@ -88,13 +100,13 @@ int main(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if(action == XO_ACTION_GENERATE_GRAPH && !(NUM_INPUTS > 0 && NUM_INSNS > 0))
+  if(action == XO_ACTION_GENERATE_PROGRAM && !(NUM_INPUTS > 0 && NUM_INSNS > 0))
     action = XO_ACTION_SHOW_HELP;
 
   switch(action)
   {
-    case XO_ACTION_GENERATE_GRAPH:
-      generate_graph();
+    case XO_ACTION_GENERATE_PROGRAM:
+      generate_program();
       break;
     case XO_ACTION_LIST_INSNS:
       list_insns();
