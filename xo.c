@@ -3,29 +3,41 @@
 #include <unistd.h>
 #include "graph.h"
 #include "insns.h"
+#include "program.h"
 #include "xo.h"
 
 typedef enum
 {
-  XO_ACTION_GENERATE_GRAPH,
+  XO_ACTION_GENERATE_PROGRAM,
   XO_ACTION_LIST_INSNS,
   XO_ACTION_SHOW_HELP,
   XO_ACTION_SHOW_VERSION,
 } xo_action;
 
-xo_action action = XO_ACTION_GENERATE_GRAPH;
-int verbosity;
-int num_inputs, num_insns;
+xo_action action = XO_ACTION_GENERATE_PROGRAM;
+int VERBOSITY;
+int NUM_INPUTS, NUM_INSNS;
+
+void program_callback(const xo_program *prog)
+{
+  if(VERBOSITY > 0)
+    xo_program_print(prog, "--\n");
+  // TODO: test program
+}
 
 void graph_callback(const xo_graph *graph)
 {
-  xo_graph_print(graph);
+  if(VERBOSITY > 0)
+    xo_graph_print(graph);
+
+  xo_program *prog = xo_program_create(NUM_INSNS); // TODO: we should keep track of this in a better fashion
+  xo_program_generate_from_graph(prog, graph, program_callback);
 }
 
-void generate_graph()
+void generate_program()
 {
-  xo_graph *graph = xo_graph_create(num_inputs+num_insns);
-  xo_supergraph *supergraph = xo_supergraph_create(num_inputs+num_insns, num_inputs);
+  xo_graph *graph = xo_graph_create(NUM_INPUTS+NUM_INSNS);
+  xo_supergraph *supergraph = xo_supergraph_create(NUM_INPUTS+NUM_INSNS, NUM_INPUTS);
   xo_graph_generate_from_supergraph(graph, supergraph, graph_callback);
 }
 
@@ -70,16 +82,16 @@ int main(int argc, char *argv[])
         action = XO_ACTION_SHOW_VERSION;
         break;
       case 'q':
-        --verbosity;
+        --VERBOSITY;
         break;
       case 'v':
-        ++verbosity;
+        ++VERBOSITY;
         break;
       case 'i':
-        num_inputs = strtol(optarg, NULL, 0);
+        NUM_INPUTS = strtol(optarg, NULL, 0);
         break;
       case 'n':
-        num_insns = strtol(optarg, NULL, 0);
+        NUM_INSNS = strtol(optarg, NULL, 0);
         break;
       default:
         exit(1);
@@ -88,13 +100,13 @@ int main(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if(action == XO_ACTION_GENERATE_GRAPH && !(num_inputs > 0 && num_insns > 0))
+  if(action == XO_ACTION_GENERATE_PROGRAM && !(NUM_INPUTS > 0 && NUM_INSNS > 0))
     action = XO_ACTION_SHOW_HELP;
 
   switch(action)
   {
-    case XO_ACTION_GENERATE_GRAPH:
-      generate_graph();
+    case XO_ACTION_GENERATE_PROGRAM:
+      generate_program();
       break;
     case XO_ACTION_LIST_INSNS:
       list_insns();
