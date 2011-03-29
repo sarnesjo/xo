@@ -16,6 +16,23 @@ typedef struct
 } xo_node;
 
 #pragma mark -
+#pragma mark graph
+
+typedef struct
+{
+  size_t num_nodes;
+  xo_node *nodes;
+} xo_graph;
+
+typedef xo_graph xo_node_variants;
+
+typedef struct
+{
+  size_t num_nodes;
+  xo_node_variants *nodes;
+} xo_supergraph;
+
+#pragma mark -
 #pragma mark machine state
 
 #define XO_MACHINE_STATE_NUM_REGS 4

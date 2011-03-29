@@ -2,6 +2,8 @@ bin_PROGRAMS = xo
 xo_SOURCES = \
              combinatorics.c \
              combinatorics.h \
+             graph.c \
+             graph.h \
              insns.c \
              insns.def \
              insns.h \
