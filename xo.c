@@ -14,8 +14,8 @@ typedef enum
 } xo_action;
 
 xo_action action = XO_ACTION_GENERATE_GRAPH;
-int verbosity;
-int num_inputs, num_insns;
+int VERBOSITY;
+int NUM_INPUTS, NUM_INSNS;
 
 void graph_callback(const xo_graph *graph)
 {
@@ -24,8 +24,8 @@ void graph_callback(const xo_graph *graph)
 
 void generate_graph()
 {
-  xo_graph *graph = xo_graph_create(num_inputs+num_insns);
-  xo_supergraph *supergraph = xo_supergraph_create(num_inputs+num_insns, num_inputs);
+  xo_graph *graph = xo_graph_create(NUM_INPUTS+NUM_INSNS);
+  xo_supergraph *supergraph = xo_supergraph_create(NUM_INPUTS+NUM_INSNS, NUM_INPUTS);
   xo_graph_generate_from_supergraph(graph, supergraph, graph_callback);
 }
 
@@ -70,16 +70,16 @@ int main(int argc, char *argv[])
         action = XO_ACTION_SHOW_VERSION;
         break;
       case 'q':
-        --verbosity;
+        --VERBOSITY;
         break;
       case 'v':
-        ++verbosity;
+        ++VERBOSITY;
         break;
       case 'i':
-        num_inputs = strtol(optarg, NULL, 0);
+        NUM_INPUTS = strtol(optarg, NULL, 0);
         break;
       case 'n':
-        num_insns = strtol(optarg, NULL, 0);
+        NUM_INSNS = strtol(optarg, NULL, 0);
         break;
       default:
         exit(1);
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if(action == XO_ACTION_GENERATE_GRAPH && !(num_inputs > 0 && num_insns > 0))
+  if(action == XO_ACTION_GENERATE_GRAPH && !(NUM_INPUTS > 0 && NUM_INSNS > 0))
     action = XO_ACTION_SHOW_HELP;
 
   switch(action)

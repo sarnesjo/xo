@@ -27,7 +27,7 @@ void xo_program_run(const xo_program *prog, xo_machine_state *st)
   {
     xo_invocation *inv = &prog->invocations[i];
     xo_invocation_invoke(inv, st);
-    if(verbosity > 0)
+    if(VERBOSITY > 0)
     {
       xo_invocation_print(inv, ": ");
       xo_machine_state_print(st, "\n");
