@@ -78,7 +78,7 @@ void xo_program_generate_from_graph_(xo_program *prog, const xo_graph *graph, xo
 
   for(size_t ins = 0; ins < num_insns; ++ins)
   {
-    xo_invocation_init(&prog->invocations[i], insns[ins].name, node->dependency0, node->dependency1);
+    xo_invocation_init(&prog->invocations[i], insns[ins].name, node->dependency0, node->dependency1); // TODO: THESE ARE NOT THE RIGHT DEPENDENCIES!
     if(i == prog->num_invocations-1)
       callback(prog);
     else
