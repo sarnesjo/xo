@@ -46,6 +46,8 @@ INSN1(dec, W, _, W, M, M, M, --dst; of = dst == 0x7fffffff)
 // TODO: implement neg?
 // TODO: implement xadd, other exchange insns?
 
+// TODO: implement lea
+
 // TODO: implement rotate and shift insns
 
 // logic
