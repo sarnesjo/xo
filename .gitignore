@@ -12,4 +12,5 @@ configure
 depcomp
 install-sh
 missing
-xo
+src/xo
+tests/check_xo
