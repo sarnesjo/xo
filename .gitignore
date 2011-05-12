@@ -12,4 +12,4 @@ configure
 depcomp
 install-sh
 missing
-xo
+src/xo
