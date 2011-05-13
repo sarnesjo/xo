@@ -45,10 +45,9 @@ INSN1(dec, W, _, W, M, M, M, --dst; of = dst == 0x7fffffff)
 // TODO: implement div, idiv, mul, imul? cf/of for mul/imul: !!(result & 0xffff0000)
 // TODO: implement neg?
 // TODO: implement xadd, other exchange insns?
-
 // TODO: implement lea
-
 // TODO: implement rotate and shift insns
+// TODO: implement setcc? like cmovcc
 
 // logic
 INSN2(and,  W, W, W, M, M, M, dst &= src; cf = 0; of = 0) // comm, imm
