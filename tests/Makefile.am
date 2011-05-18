@@ -1,3 +1,4 @@
 TESTS = $(check_PROGRAMS)
-check_PROGRAMS = asm_input
+check_PROGRAMS = asm_input asm_input_insns
 asm_input_SOURCES = asm_input.c check.h ../src/parser.c ../src/parser.h
+asm_input_insns_SOURCES = asm_input_insns.c check.h ../src/parser.c ../src/parser.h
