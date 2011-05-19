@@ -14,4 +14,5 @@ install-sh
 missing
 src/xo
 tests/asm_input
+tests/asm_input_count
 tests/asm_input_insns

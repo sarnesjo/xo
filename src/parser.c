@@ -79,13 +79,16 @@ static bool insn_(const char *input, const char **remaining_input)
   return true;
 }
 
-bool xo_parser_validate(const char *input)
+bool validate_and_count_insns_(const char *input, size_t *num_insns)
 {
   if(!input)
     return false;
 
+  size_t n = 0;
+
   // read all insns
-  while(insn_(input, &input));
+  while(insn_(input, &input))
+    ++n;
 
   // make sure nothing but whitespace remains (ugly)
   while(*input)
@@ -95,5 +98,19 @@ bool xo_parser_validate(const char *input)
     ++input;
   }
 
+  if(num_insns)
+    *num_insns = n;
   return true;
+}
+
+bool xo_parser_validate(const char *input)
+{
+  return validate_and_count_insns_(input, NULL);
+}
+
+size_t xo_parser_count_insns(const char *input)
+{
+  size_t n = 0;
+  validate_and_count_insns_(input, &n);
+  return n;
 }
