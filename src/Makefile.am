@@ -15,6 +15,8 @@ xo_SOURCES = \
              machine_state.h \
              node.c \
              node.h \
+             parser.c \
+             parser.h \
              program.c \
              program.h \
              types.h \
