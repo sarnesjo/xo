@@ -54,7 +54,7 @@ static bool insn_(const char *input, const char **remaining_input)
 
   if(arity >= 2)
   {
-    if(sscanf(input, " %7[a-z]%n", buf, &num_chars_consumed) != 1)
+    if(sscanf(input, " r%1[0-7]%n", buf, &num_chars_consumed) != 1)
       return false;
     input += num_chars_consumed;
 
@@ -65,7 +65,7 @@ static bool insn_(const char *input, const char **remaining_input)
 
   if(arity >= 1)
   {
-    if(sscanf(input, " %7[a-z]%n", buf, &num_chars_consumed) != 1)
+    if(sscanf(input, " r%1[0-7]%n", buf, &num_chars_consumed) != 1)
       return false;
     input += num_chars_consumed;
   }
