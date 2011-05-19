@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include "graph.h"
 #include "insns.h"
+#include "invocation.h"
+#include "parser.h"
 #include "program.h"
 #include "xo.h"
 
@@ -16,29 +18,27 @@ typedef enum
 
 xo_action action = XO_ACTION_GENERATE_PROGRAM;
 int VERBOSITY;
-int NUM_INPUTS, NUM_INSNS;
+int NUM_INPUTS, NUM_INSNS; // TODO: remove
+char *GOAL_PROGRAM_STR;
 
-void program_callback(const xo_program *prog)
+void parser_traverse_callback(size_t i, const char *insn_name, size_t r0, size_t r1, void *userdata)
 {
-  if(VERBOSITY > 0)
-    xo_program_print(prog, "--\n");
-  // TODO: test program
-}
-
-void graph_callback(const xo_graph *graph)
-{
-  if(VERBOSITY > 0)
-    xo_graph_print(graph);
-
-  xo_program *prog = xo_program_create(NUM_INSNS); // TODO: we should keep track of this in a better fashion
-  xo_program_generate_from_graph(prog, graph, program_callback);
+  xo_program *goal_program = userdata;
+  xo_invocation_init(&goal_program->invocations[i], insn_name, r0, r1);
 }
 
 void generate_program()
 {
-  xo_graph *graph = xo_graph_create(NUM_INPUTS+NUM_INSNS);
-  xo_supergraph *supergraph = xo_supergraph_create(NUM_INPUTS+NUM_INSNS, NUM_INPUTS);
-  xo_graph_generate_from_supergraph(graph, supergraph, graph_callback);
+  size_t n = xo_parser_count_insns(GOAL_PROGRAM_STR);
+  if(n == 0)
+  {
+    fprintf(stderr, "invalid goal program\n");
+    exit(EXIT_FAILURE);
+  }
+
+  xo_program *goal_program = xo_program_create(n); // TODO: destroy when done
+  xo_parser_traverse(GOAL_PROGRAM_STR, parser_traverse_callback, goal_program);
+  xo_program_print(goal_program, "");
 }
 
 void list_insns()
@@ -54,7 +54,7 @@ void list_insns()
 void show_help()
 {
   printf("usage:\n");
-  printf("\t%s [-qv] -i NUM_INPUTS -n NUM_INSNS\n", PACKAGE_NAME);
+  printf("\t%s [-qv] -g GOAL_PROGRAM\n", PACKAGE_NAME);
   printf("\t%s -L\n", PACKAGE_NAME);
   printf("\t%s -H\n", PACKAGE_NAME);
   printf("\t%s -V\n", PACKAGE_NAME);
@@ -68,7 +68,7 @@ void show_version()
 int main(int argc, char *argv[])
 {
   int o;
-  while((o = getopt(argc, argv, "LHVqvi:n:")) != -1)
+  while((o = getopt(argc, argv, "LHVqvg:")) != -1)
   {
     switch(o)
     {
@@ -87,11 +87,9 @@ int main(int argc, char *argv[])
       case 'v':
         ++VERBOSITY;
         break;
-      case 'i':
-        NUM_INPUTS = strtol(optarg, NULL, 0);
-        break;
-      case 'n':
-        NUM_INSNS = strtol(optarg, NULL, 0);
+      case 'g':
+        free(GOAL_PROGRAM_STR);
+        GOAL_PROGRAM_STR = strdup(optarg);
         break;
       default:
         exit(1);
@@ -100,7 +98,7 @@ int main(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if(action == XO_ACTION_GENERATE_PROGRAM && !(NUM_INPUTS > 0 && NUM_INSNS > 0))
+  if(action == XO_ACTION_GENERATE_PROGRAM && !GOAL_PROGRAM_STR)
     action = XO_ACTION_SHOW_HELP;
 
   switch(action)
