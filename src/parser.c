@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "parser.h"
+#include "types.h"
 
 // TODO: this should probably be moved elsewhere
 static int arity_(const char *insn_name)
@@ -42,7 +43,7 @@ static int arity_(const char *insn_name)
 static bool insn_(const char *input, const char **remaining_input, char out_insn_name[8], size_t *out_r0, size_t *out_r1)
 {
   char buf[8], insn_name[8]; // TODO: define max insn name length (to 7) somewhere
-  size_t r0 = 0, r1 = 0; // TODO: use non-value?
+  size_t r0 = XO_NODE_DEPENDENCY_NONE, r1 = XO_NODE_DEPENDENCY_NONE;
   int num_chars_consumed = 0;
 
   if(sscanf(input, " %7[a-z]%n", buf, &num_chars_consumed) != 1)
