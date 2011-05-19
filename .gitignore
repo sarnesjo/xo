@@ -13,4 +13,6 @@ depcomp
 install-sh
 missing
 src/xo
-tests/check_xo
+tests/asm_input
+tests/asm_input_count
+tests/asm_input_insns
