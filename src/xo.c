@@ -42,12 +42,8 @@ void generate_program()
 
 void list_insns()
 {
-  for(size_t i = 0; i < XO_NUM_INSNS0; ++i)
-    printf("%s\n", xo_insns0[i].name);
-  for(size_t i = 0; i < XO_NUM_INSNS1; ++i)
-    printf("%s\n", xo_insns1[i].name);
-  for(size_t i = 0; i < XO_NUM_INSNS2; ++i)
-    printf("%s\n", xo_insns2[i].name);
+  for(size_t i = 0; i < XO_NUM_INSNS; ++i)
+    printf("%s\n", xo_insns[i].name);
 }
 
 void show_help()

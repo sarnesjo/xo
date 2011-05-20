@@ -14,7 +14,7 @@
 #define W 1 // write, update register/flag with the value assigned to it by the code snippet
 #define M 2 // (PF, SF, ZF only) modify, update flag automatically, based on the value assigned to dst by the code snippet
 
-#define INSN2(NAME, DST, CF, OF, PF, SF, ZF, CODE)                         \
+#define INSN(NAME, DST, CF, OF, PF, SF, ZF, CODE)                          \
 void insn_##NAME(xo_machine_state *state, size_t r0, size_t r1)            \
 {                                                                          \
   uint32_t dst = state->regs[r0];                                          \
@@ -75,48 +75,18 @@ void insn_##NAME(xo_machine_state *state, size_t r0, size_t r1)            \
 }
 
 // for simplicity, implementations of unary and nullary operations also take two arguments, which are to be ignored
-#define INSN1(NAME, DST, CF, OF, PF, SF, ZF, CODE) INSN2(NAME, DST, CF, OF, PF, SF, ZF, CODE)
-#define INSN0(NAME, DST, CF, OF, PF, SF, ZF, CODE) INSN2(NAME, DST, CF, OF, PF, SF, ZF, CODE)
 
 #include "insns.def"
 
-#undef INSN0
-#undef INSN1
-#undef INSN2
+#undef INSN
 
 #undef _
 #undef W
 #undef M
 
-#define INSN0(NAME, DST, CF, OF, PF, SF, ZF, CODE) {#NAME, insn_##NAME},
-#define INSN1(NAME, DST, CF, OF, PF, SF, ZF, CODE)
-#define INSN2(NAME, DST, CF, OF, PF, SF, ZF, CODE)
-xo_instruction xo_insns0[] =
+#define INSN(NAME, DST, CF, OF, PF, SF, ZF, CODE) {#NAME, insn_##NAME},
+xo_instruction xo_insns[] =
 {
 #include "insns.def"
 };
-#undef INSN0
-#undef INSN1
-#undef INSN2
-
-#define INSN0(NAME, DST, CF, OF, PF, SF, ZF, CODE)
-#define INSN1(NAME, DST, CF, OF, PF, SF, ZF, CODE) {#NAME, insn_##NAME},
-#define INSN2(NAME, DST, CF, OF, PF, SF, ZF, CODE)
-xo_instruction xo_insns1[] =
-{
-#include "insns.def"
-};
-#undef INSN0
-#undef INSN1
-#undef INSN2
-
-#define INSN0(NAME, DST, CF, OF, PF, SF, ZF, CODE)
-#define INSN1(NAME, DST, CF, OF, PF, SF, ZF, CODE)
-#define INSN2(NAME, DST, CF, OF, PF, SF, ZF, CODE) {#NAME, insn_##NAME},
-xo_instruction xo_insns2[] =
-{
-#include "insns.def"
-};
-#undef INSN0
-#undef INSN1
-#undef INSN2
+#undef INSN
