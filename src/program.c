@@ -1,10 +1,8 @@
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "insns.h"
 #include "invocation.h"
 #include "machine_state.h"
-#include "node.h"
 #include "program.h"
 #include "xo.h"
 
@@ -42,51 +40,54 @@ void xo_program_run(const xo_program *prog, xo_machine_state *st)
 void xo_program_print(const xo_program *prog, const char *suffix)
 {
   for(size_t i = 0; i < prog->num_invocations; ++i)
-    xo_invocation_print(&prog->invocations[i], "\n");
+    xo_invocation_print(&prog->invocations[i], " ");
   printf("%s", suffix);
 }
 
-// --
-
-void xo_program_generate_from_graph_(xo_program *prog, const xo_graph *graph, xo_program_callback callback, size_t i)
+void program_generate_(xo_program *prog, xo_program_callback callback, void *userdata, size_t inv)
 {
-  assert(prog->num_invocations + NUM_INPUTS == graph->num_nodes); // TODO: let this function create program internally instead?
-  xo_node *node = &graph->nodes[NUM_INPUTS+i];
-
-  size_t num_insns = 0;
-  xo_instruction *insns = NULL;
-
-  switch(xo_node_arity(node))
+  if(inv == prog->num_invocations)
   {
-    case 2:
-      num_insns = XO_NUM_INSNS2;
-      insns = xo_insns2;
-      break;
-    case 1:
-      num_insns = XO_NUM_INSNS1;
-      insns = xo_insns1;
-      break;
-    case 0:
-      num_insns = XO_NUM_INSNS0;
-      insns = xo_insns0;
-      break;
+    callback(prog, userdata);
   }
-
-  // TODO: should generate both d0,d1 and d1,d0 for noncomm insns
-  // TODO: should not generate cmov insns when flag is undefined
-  // TODO: should not generate mov/cmov insns that copies register to itself... how to model?
-
-  for(size_t ins = 0; ins < num_insns; ++ins)
+  else
   {
-    xo_invocation_init(&prog->invocations[i], insns[ins].name, node->dependency0, node->dependency1); // TODO: THESE ARE NOT THE RIGHT DEPENDENCIES!
-    if(i == prog->num_invocations-1)
-      callback(prog);
-    else
-      xo_program_generate_from_graph_(prog, graph, callback, i+1);
+    for(size_t i = 0; i < XO_NUM_INSNS; ++i)
+    {
+      xo_instruction *insn = &xo_insns[i];
+
+      switch(insn->arity)
+      {
+        case 0:
+          xo_invocation_init(&prog->invocations[inv], insn, XO_REGISTER_NONE, XO_REGISTER_NONE);
+          program_generate_(prog, callback, userdata, inv+1);
+          break;
+        case 1:
+          for(size_t r0 = 0; r0 < XO_MACHINE_STATE_NUM_REGS; ++r0)
+          {
+            xo_invocation_init(&prog->invocations[inv], insn, r0, XO_REGISTER_NONE);
+            program_generate_(prog, callback, userdata, inv+1);
+          }
+          break;
+        case 2:
+          for(size_t r0 = 0; r0 < XO_MACHINE_STATE_NUM_REGS; ++r0)
+          {
+            for(size_t r1 = 0; r1 < XO_MACHINE_STATE_NUM_REGS; ++r1)
+            {
+              xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
+              program_generate_(prog, callback, userdata, inv+1);
+            }
+          }
+          break;
+      }
+    }
   }
 }
 
-void xo_program_generate_from_graph(xo_program *prog, const xo_graph *graph, xo_program_callback callback)
+void xo_program_generate(xo_program *prog, xo_program_callback callback, void *userdata)
 {
-  xo_program_generate_from_graph_(prog, graph, callback, 0);
+  if(!prog)
+    return;
+
+  program_generate_(prog, callback, userdata, 0);
 }
