@@ -17,9 +17,7 @@ typedef enum
   XO_ACTION_SHOW_VERSION,
 } xo_action;
 
-xo_action action = XO_ACTION_GENERATE_PROGRAM;
 int VERBOSITY;
-char *GOAL_PROGRAM_STR;
 
 void did_parse_insn(size_t i, const xo_instruction *insn, size_t r0, size_t r1, void *userdata)
 {
@@ -33,9 +31,9 @@ void did_generate_program(const xo_program *program, void *userdata)
   xo_program_print(program, "\n");
 }
 
-void generate_program()
+void generate_program(const char *goal_program_str)
 {
-  size_t num_insns_in_goal_program = xo_parser_count_insns(GOAL_PROGRAM_STR);
+  size_t num_insns_in_goal_program = xo_parser_count_insns(goal_program_str);
   if(num_insns_in_goal_program == 0)
   {
     fprintf(stderr, "invalid goal program\n");
@@ -43,7 +41,7 @@ void generate_program()
   }
 
   xo_program *goal_program = xo_program_create(num_insns_in_goal_program);
-  xo_parser_traverse(GOAL_PROGRAM_STR, did_parse_insn, goal_program);
+  xo_parser_traverse(goal_program_str, did_parse_insn, goal_program);
   xo_program_print(goal_program, "\n");
 
   for(size_t num_insns = 1; num_insns <= num_insns_in_goal_program; ++num_insns) // TODO: consider measures of optimality besides insn count
@@ -67,7 +65,7 @@ void list_insns()
 void show_help()
 {
   printf("usage:\n");
-  printf("\t%s [-qv] -g GOAL_PROGRAM\n", PACKAGE_NAME);
+  printf("\t%s [-qv] GOAL_PROGRAM\n", PACKAGE_NAME);
   printf("\t%s -L\n", PACKAGE_NAME);
   printf("\t%s -H\n", PACKAGE_NAME);
   printf("\t%s -V\n", PACKAGE_NAME);
@@ -80,8 +78,10 @@ void show_version()
 
 int main(int argc, char *argv[])
 {
+  xo_action action = XO_ACTION_GENERATE_PROGRAM;
+
   int o;
-  while((o = getopt(argc, argv, "LHVqvg:")) != -1)
+  while((o = getopt(argc, argv, "LHVqv")) != -1)
   {
     switch(o)
     {
@@ -100,10 +100,6 @@ int main(int argc, char *argv[])
       case 'v':
         ++VERBOSITY;
         break;
-      case 'g':
-        free(GOAL_PROGRAM_STR);
-        GOAL_PROGRAM_STR = strdup(optarg);
-        break;
       default:
         exit(1);
     }
@@ -111,13 +107,13 @@ int main(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if(action == XO_ACTION_GENERATE_PROGRAM && !GOAL_PROGRAM_STR)
+  if(action == XO_ACTION_GENERATE_PROGRAM && argc != 1)
     action = XO_ACTION_SHOW_HELP;
 
   switch(action)
   {
     case XO_ACTION_GENERATE_PROGRAM:
-      generate_program();
+      generate_program(argv[0]);
       break;
     case XO_ACTION_LIST_INSNS:
       list_insns();
