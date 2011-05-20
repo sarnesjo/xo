@@ -18,7 +18,6 @@ typedef enum
 
 xo_action action = XO_ACTION_GENERATE_PROGRAM;
 int VERBOSITY;
-int NUM_INPUTS, NUM_INSNS; // TODO: remove
 char *GOAL_PROGRAM_STR;
 
 void parser_traverse_callback(size_t i, const char *insn_name, size_t r0, size_t r1, void *userdata)
