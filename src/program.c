@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "insns.h"
 #include "invocation.h"
 #include "machine_state.h"
 #include "program.h"
@@ -39,11 +40,54 @@ void xo_program_run(const xo_program *prog, xo_machine_state *st)
 void xo_program_print(const xo_program *prog, const char *suffix)
 {
   for(size_t i = 0; i < prog->num_invocations; ++i)
-    xo_invocation_print(&prog->invocations[i], "\n");
+    xo_invocation_print(&prog->invocations[i], " ");
   printf("%s", suffix);
+}
+
+void program_generate_(xo_program *prog, xo_program_callback callback, void *userdata, size_t inv)
+{
+  if(inv == prog->num_invocations)
+  {
+    callback(prog, userdata);
+  }
+  else
+  {
+    for(size_t i = 0; i < XO_NUM_INSNS; ++i)
+    {
+      xo_instruction *insn = &xo_insns[i];
+
+      switch(insn->arity)
+      {
+        case 0:
+          xo_invocation_init(&prog->invocations[inv], insn, XO_REGISTER_NONE, XO_REGISTER_NONE);
+          program_generate_(prog, callback, userdata, inv+1);
+          break;
+        case 1:
+          for(size_t r0 = 0; r0 < XO_MACHINE_STATE_NUM_REGS; ++r0)
+          {
+            xo_invocation_init(&prog->invocations[inv], insn, r0, XO_REGISTER_NONE);
+            program_generate_(prog, callback, userdata, inv+1);
+          }
+          break;
+        case 2:
+          for(size_t r0 = 0; r0 < XO_MACHINE_STATE_NUM_REGS; ++r0)
+          {
+            for(size_t r1 = 0; r1 < XO_MACHINE_STATE_NUM_REGS; ++r1)
+            {
+              xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
+              program_generate_(prog, callback, userdata, inv+1);
+            }
+          }
+          break;
+      }
+    }
+  }
 }
 
 void xo_program_generate(xo_program *prog, xo_program_callback callback, void *userdata)
 {
-  // TODO
+  if(!prog)
+    return;
+
+  program_generate_(prog, callback, userdata, 0);
 }

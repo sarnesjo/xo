@@ -27,18 +27,35 @@ void did_parse_insn(size_t i, const xo_instruction *insn, size_t r0, size_t r1, 
   xo_invocation_init(&goal_program->invocations[i], insn, r0, r1);
 }
 
+void did_generate_program(const xo_program *program, void *userdata)
+{
+  // TODO: test program for equivalence with goal program
+  xo_program_print(program, "\n");
+}
+
 void generate_program()
 {
-  size_t n = xo_parser_count_insns(GOAL_PROGRAM_STR);
-  if(n == 0)
+  size_t num_insns_in_goal_program = xo_parser_count_insns(GOAL_PROGRAM_STR);
+  if(num_insns_in_goal_program == 0)
   {
     fprintf(stderr, "invalid goal program\n");
     exit(EXIT_FAILURE);
   }
 
-  xo_program *goal_program = xo_program_create(n); // TODO: destroy when done
+  xo_program *goal_program = xo_program_create(num_insns_in_goal_program);
   xo_parser_traverse(GOAL_PROGRAM_STR, did_parse_insn, goal_program);
-  xo_program_print(goal_program, "");
+  xo_program_print(goal_program, "\n");
+
+  for(size_t num_insns = 1; num_insns <= num_insns_in_goal_program; ++num_insns) // TODO: consider measures of optimality besides insn count
+  {
+    fprintf(stderr, "%zu...\n", num_insns);
+
+    xo_program *program = xo_program_create(num_insns);
+    xo_program_generate(program, did_generate_program, NULL);
+    xo_program_destroy(program);
+  }
+
+  xo_program_destroy(goal_program);
 }
 
 void list_insns()
