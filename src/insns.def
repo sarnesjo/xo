@@ -17,7 +17,7 @@ INSN(add, 2, W, W, W, M, M, M,
 INSN(adc, 2, W, W, W, M, M, M,
     tmp = dst + src + cf;
     cf = cf ? tmp <= dst : tmp < dst;
-    of = S(dst) == S(src) && S(dst) != S(tmp); // TODO: cf?
+    of = S(dst) == S(src) && S(dst) != S(tmp);
     dst = tmp) // imm
 
 INSN(sub, 2, W, W, W, M, M, M,
@@ -29,7 +29,7 @@ INSN(sub, 2, W, W, W, M, M, M,
 INSN(sbb, 2, W, W, W, M, M, M,
     tmp = dst - (src + cf);
     cf = cf ? tmp >= dst : tmp > dst;
-    of = S(dst) != S(src) && S(dst) != S(tmp); // TODO: cf?
+    of = S(dst) != S(src) && S(dst) != S(tmp);
     dst = tmp) // imm
 
 INSN(cmp, 2, _, W, W, M, M, M,
@@ -42,20 +42,16 @@ INSN(cmp, 2, _, W, W, M, M, M,
 INSN(inc, 1, W, _, W, M, M, M, ++dst; of = dst == 0x80000000)
 INSN(dec, 1, W, _, W, M, M, M, --dst; of = dst == 0x7fffffff)
 
-// TODO: implement div, idiv, mul, imul? cf/of for mul/imul: !!(result & 0xffff0000)
-// TODO: implement neg?
-// TODO: implement xadd, other exchange insns?
+// TODO: implement mul, imul? cf/of: !!(result & 0xffff0000)
+// TODO: implement neg
 // TODO: implement lea
 // TODO: implement rotate and shift insns
-// TODO: implement setcc? like cmovcc
 
 // logic
 INSN(and,  2, W, W, W, M, M, M, dst &= src; cf = 0; of = 0) // imm
 INSN(or,   2, W, W, W, M, M, M, dst |= src; cf = 0; of = 0) // imm
 INSN(xor,  2, W, W, W, M, M, M, dst ^= src; cf = 0; of = 0) // imm
 INSN(not,  1, W, _, _, _, _, _, dst = ~dst)
-
-// TODO: implement bit and byte insns?
 
 // flag control
 INSN(clc, 0, _, W, _, _, _, _, cf = 0)

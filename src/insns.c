@@ -3,8 +3,6 @@
 
 // TODO: model undefined flag values
 // TODO: model imm
-// TODO: do we need to model signed/unsigned?
-// TODO: do we need to model atomicity? see LOCK
 
 // The code to compute the parity of the LSB was taken from [Sean Eron Anderson's Bit Twiddling Hacks][1]
 // and modified slightly to yield a 1 for an *even* number of bits.

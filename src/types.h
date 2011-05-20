@@ -10,6 +10,7 @@
 #pragma mark machine state
 
 #define XO_MACHINE_STATE_NUM_REGS 8
+
 typedef struct
 {
   uint32_t regs[XO_MACHINE_STATE_NUM_REGS];
