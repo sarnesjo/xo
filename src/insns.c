@@ -14,7 +14,8 @@
 #define W 1 // write, update register/flag with the value assigned to it by the code snippet
 #define M 2 // (PF, SF, ZF only) modify, update flag automatically, based on the value assigned to dst by the code snippet
 
-#define INSN(NAME, DST, CF, OF, PF, SF, ZF, CODE)                          \
+// for simplicity, implementations of unary and nullary operations also take two arguments, which are to be ignored
+#define INSN(NAME, ARITY, DST, CF, OF, PF, SF, ZF, CODE)                   \
 void insn_##NAME(xo_machine_state *state, size_t r0, size_t r1)            \
 {                                                                          \
   uint32_t dst = state->regs[r0];                                          \
@@ -74,8 +75,6 @@ void insn_##NAME(xo_machine_state *state, size_t r0, size_t r1)            \
   }                                                                        \
 }
 
-// for simplicity, implementations of unary and nullary operations also take two arguments, which are to be ignored
-
 #include "insns.def"
 
 #undef INSN
@@ -84,9 +83,11 @@ void insn_##NAME(xo_machine_state *state, size_t r0, size_t r1)            \
 #undef W
 #undef M
 
-#define INSN(NAME, DST, CF, OF, PF, SF, ZF, CODE) {#NAME, insn_##NAME},
+#define INSN(NAME, ARITY, DST, CF, OF, PF, SF, ZF, CODE) {#NAME, ARITY, insn_##NAME},
+
 xo_instruction xo_insns[] =
 {
 #include "insns.def"
 };
+
 #undef INSN

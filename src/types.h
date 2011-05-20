@@ -28,6 +28,7 @@ typedef void (*xo_instruction_impl)(xo_machine_state *, size_t, size_t);
 typedef struct
 {
   char *name;
+  size_t arity;
   xo_instruction_impl impl;
 } xo_instruction;
 
