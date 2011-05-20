@@ -2,7 +2,7 @@
 #include "insns.h"
 
 // TODO: model undefined flag values
-// TODO: model comm/noncomm, imm
+// TODO: model imm
 // TODO: do we need to model signed/unsigned?
 // TODO: do we need to model atomicity? see LOCK
 
