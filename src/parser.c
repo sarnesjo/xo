@@ -3,20 +3,18 @@
 #include <string.h>
 #include "instruction.h"
 #include "parser.h"
-#include "types.h"
 
-static bool insn_(const char *input, const char **remaining_input, char out_insn_name[8], size_t *out_r0, size_t *out_r1)
+static bool insn_(const char *input, const char **remaining_input, xo_instruction **out_insn, size_t *out_r0, size_t *out_r1)
 {
-  char buf[8], insn_name[8]; // TODO: define max insn name length (to 7) somewhere
+  char buf[8]; // TODO: define max insn name length (to 7) somewhere
   size_t r0 = XO_REGISTER_NONE, r1 = XO_REGISTER_NONE;
   int num_chars_consumed = 0;
 
   if(sscanf(input, " %7[a-z]%n", buf, &num_chars_consumed) != 1)
     return false;
-  strlcpy(insn_name, buf, 8);
   input += num_chars_consumed;
 
-  xo_instruction *insn = xo_instruction_get(insn_name);
+  xo_instruction *insn = xo_instruction_get(buf);
 
   if(!insn)
     return false;
@@ -47,8 +45,8 @@ static bool insn_(const char *input, const char **remaining_input, char out_insn
 
   if(remaining_input)
     *remaining_input = input;
-  if(out_insn_name)
-    strlcpy(out_insn_name, insn_name, 8);
+  if(out_insn)
+    *out_insn = insn;
   if(out_r0)
     *out_r0 = r0;
   if(out_r1)
@@ -62,15 +60,15 @@ bool validate_count_traverse_(const char *input, size_t *num_insns, xo_parser_tr
   if(!input)
     return false;
 
-  char insn_name[8];
-  size_t r0, r1;
+  xo_instruction *insn = NULL;
+  size_t r0 = XO_REGISTER_NONE, r1 = XO_REGISTER_NONE;
   size_t n = 0;
 
   // read all insns
-  while(insn_(input, &input, insn_name, &r0, &r1))
+  while(insn_(input, &input, &insn, &r0, &r1))
   {
     if(callback)
-      callback(n, insn_name, r0, r1, userdata);
+      callback(n, insn, r0, r1, userdata);
     ++n;
   }
 

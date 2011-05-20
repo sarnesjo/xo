@@ -21,10 +21,10 @@ xo_action action = XO_ACTION_GENERATE_PROGRAM;
 int VERBOSITY;
 char *GOAL_PROGRAM_STR;
 
-void parser_traverse_callback(size_t i, const char *insn_name, size_t r0, size_t r1, void *userdata)
+void did_parse_insn(size_t i, const xo_instruction *insn, size_t r0, size_t r1, void *userdata)
 {
   xo_program *goal_program = userdata;
-  xo_invocation_init(&goal_program->invocations[i], insn_name, r0, r1);
+  xo_invocation_init(&goal_program->invocations[i], insn, r0, r1);
 }
 
 void generate_program()
@@ -37,7 +37,7 @@ void generate_program()
   }
 
   xo_program *goal_program = xo_program_create(n); // TODO: destroy when done
-  xo_parser_traverse(GOAL_PROGRAM_STR, parser_traverse_callback, goal_program);
+  xo_parser_traverse(GOAL_PROGRAM_STR, did_parse_insn, goal_program);
   xo_program_print(goal_program, "");
 }
 

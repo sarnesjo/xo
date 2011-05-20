@@ -37,7 +37,7 @@ typedef struct
 
 typedef struct
 {
-  xo_instruction *insn;
+  const xo_instruction *insn;
   size_t r0;
   size_t r1;
 } xo_invocation;
