@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "insns.h"
+#include "instruction.h"
 #include "invocation.h"
 #include "parser.h"
 #include "program.h"
@@ -43,7 +44,7 @@ void generate_program()
 void list_insns()
 {
   for(size_t i = 0; i < XO_NUM_INSNS; ++i)
-    printf("%s\n", xo_insns[i].name);
+    xo_instruction_print(&xo_insns[i], "\n");
 }
 
 void show_help()
