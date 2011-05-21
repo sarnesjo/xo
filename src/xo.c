@@ -1,11 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include "insns.h"
 #include "instruction.h"
-#include "invocation.h"
-#include "parser.h"
 #include "program.h"
 
 typedef enum
@@ -16,12 +13,6 @@ typedef enum
   XO_ACTION_SHOW_VERSION,
 } xo_action;
 
-void did_parse_insn(size_t i, const xo_instruction *insn, size_t r0, size_t r1, void *userdata)
-{
-  xo_program *goal_program = userdata;
-  xo_invocation_init(&goal_program->invocations[i], insn, r0, r1);
-}
-
 void did_generate_program(const xo_program *program, void *userdata)
 {
   // TODO: test program for equivalence with goal program
@@ -30,18 +21,32 @@ void did_generate_program(const xo_program *program, void *userdata)
 
 void generate_program(const char *goal_program_str)
 {
-  size_t num_insns_in_goal_program = xo_parser_count_insns(goal_program_str);
-  if(num_insns_in_goal_program == 0)
+  xo_program *goal_program = xo_program_create_from_str(goal_program_str);
+  if(!goal_program)
   {
     fprintf(stderr, "invalid goal program\n");
     exit(EXIT_FAILURE);
   }
 
-  xo_program *goal_program = xo_program_create(num_insns_in_goal_program);
-  xo_parser_traverse(goal_program_str, did_parse_insn, goal_program);
+  uint8_t input_regs = 0, output_regs = 0;
+  xo_program_analyze(goal_program, &input_regs, &output_regs);
+
+  fprintf(stderr, "goal program: ");
   xo_program_print(goal_program, "\n");
 
-  for(size_t num_insns = 1; num_insns <= num_insns_in_goal_program; ++num_insns) // TODO: consider measures of optimality besides insn count
+  fprintf(stderr, "input registers:");
+  for(size_t i = 0; i < XO_MACHINE_STATE_NUM_REGS; ++i)
+    if(input_regs & (1 << i))
+      fprintf(stderr, " r%zu", i);
+  fprintf(stderr, "\n");
+
+  fprintf(stderr, "output register:");
+  for(size_t o = 0; o < XO_MACHINE_STATE_NUM_REGS; ++o)
+    if(output_regs & (1 << o))
+      fprintf(stderr, " r%zu", o);
+  fprintf(stderr, "\n");
+
+  for(size_t num_insns = 1; num_insns <= goal_program->num_invocations; ++num_insns) // TODO: consider measures of optimality besides insn count
   {
     fprintf(stderr, "%zu...\n", num_insns);
 
