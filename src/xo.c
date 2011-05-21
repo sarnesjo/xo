@@ -7,7 +7,6 @@
 #include "invocation.h"
 #include "parser.h"
 #include "program.h"
-#include "xo.h"
 
 typedef enum
 {
@@ -16,8 +15,6 @@ typedef enum
   XO_ACTION_SHOW_HELP,
   XO_ACTION_SHOW_VERSION,
 } xo_action;
-
-int VERBOSITY;
 
 void did_parse_insn(size_t i, const xo_instruction *insn, size_t r0, size_t r1, void *userdata)
 {
@@ -79,6 +76,7 @@ void show_version()
 int main(int argc, char *argv[])
 {
   xo_action action = XO_ACTION_GENERATE_PROGRAM;
+  int verbosity;
 
   int o;
   while((o = getopt(argc, argv, "LHVqv")) != -1)
@@ -95,10 +93,10 @@ int main(int argc, char *argv[])
         action = XO_ACTION_SHOW_VERSION;
         break;
       case 'q':
-        --VERBOSITY;
+        --verbosity;
         break;
       case 'v':
-        ++VERBOSITY;
+        ++verbosity;
         break;
       default:
         exit(1);

@@ -14,5 +14,4 @@ xo_SOURCES = \
              program.c \
              program.h \
              types.h \
-             xo.c \
-             xo.h
+             xo.c
