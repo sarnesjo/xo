@@ -16,6 +16,7 @@ SOURCES = \
           ../src/parser.h \
           ../src/program.c \
           ../src/program.h \
+          ../src/std.h \
           ../src/types.h
 
 asm_input_SOURCES = asm_input.c $(SOURCES)
