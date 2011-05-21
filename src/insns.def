@@ -1,95 +1,79 @@
 // vim: set filetype=c:
 
+// TODO: implement mul, imul? cf/of: !!(result & 0xffff0000)
+// TODO: implement neg
+// TODO: implement lea
+// TODO: implement rotate and shift insns
 // TODO: double-check flags against AMD/Intel for all insns
+// TODO: double-check cf/of code for add/adc/sub/sbb/cmp
 
 // binary arithmetic
 
 #define S(x) ((x) >> 31)
 
-// TODO: double-check cf/of code for add/adc/sub/sbb/cmp
+INSN(add, 2, DST|SRC, DST, 0,  CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, tmp = dst + src;
+                                                               cf = tmp < dst;
+                                                               of = S(dst) == S(src) && S(dst) != S(tmp);
+                                                               dst = tmp) // imm
 
-INSN(add, 2, W, W, W, M, M, M,
-    tmp = dst + src;
-    cf = tmp < dst;
-    of = S(dst) == S(src) && S(dst) != S(tmp);
-    dst = tmp) // imm
+INSN(adc, 2, DST|SRC, DST, CF, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, tmp = dst + src + cf;
+                                                               cf = cf ? tmp <= dst : tmp < dst;
+                                                               of = S(dst) == S(src) && S(dst) != S(tmp);
+                                                               dst = tmp) // imm
 
-INSN(adc, 2, W, W, W, M, M, M,
-    tmp = dst + src + cf;
-    cf = cf ? tmp <= dst : tmp < dst;
-    of = S(dst) == S(src) && S(dst) != S(tmp);
-    dst = tmp) // imm
+INSN(sub, 2, DST|SRC, DST, 0,  CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, tmp = dst - src;
+                                                               cf = tmp > dst;
+                                                               of = S(dst) != S(src) && S(dst) != S(tmp);
+                                                               dst = tmp) // imm
 
-INSN(sub, 2, W, W, W, M, M, M,
-    tmp = dst - src;
-    cf = tmp > dst;
-    of = S(dst) != S(src) && S(dst) != S(tmp);
-    dst = tmp) // imm
+INSN(sbb, 2, DST|SRC, DST, CF, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, tmp = dst - (src + cf);
+                                                               cf = cf ? tmp >= dst : tmp > dst;
+                                                               of = S(dst) != S(src) && S(dst) != S(tmp);
+                                                               dst = tmp) // imm
 
-INSN(sbb, 2, W, W, W, M, M, M,
-    tmp = dst - (src + cf);
-    cf = cf ? tmp >= dst : tmp > dst;
-    of = S(dst) != S(src) && S(dst) != S(tmp);
-    dst = tmp) // imm
-
-INSN(cmp, 2, _, W, W, M, M, M,
-    tmp = dst - src;
-    cf = tmp > dst;
-    of = S(dst) != S(src) && S(dst) != S(tmp)) // imm
+INSN(cmp, 2, DST|SRC, 0,   0,  CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, tmp = dst - src;
+                                                               cf = tmp > dst;
+                                                               of = S(dst) != S(src) && S(dst) != S(tmp)) // imm
 
 #undef S
 
-INSN(inc, 1, W, _, W, M, M, M, ++dst; of = dst == 0x80000000)
-INSN(dec, 1, W, _, W, M, M, M, --dst; of = dst == 0x7fffffff)
-
-// TODO: implement mul, imul? cf/of: !!(result & 0xffff0000)
-// TODO: implement neg
-// TODO: implement lea
-// TODO: implement rotate and shift insns
+INSN(inc, 1, DST, DST, 0, OF|PF|SF|ZF, OF|PF|SF|ZF, ++dst; of = dst == 0x80000000)
+INSN(dec, 1, DST, DST, 0, OF|PF|SF|ZF, OF|PF|SF|ZF, --dst; of = dst == 0x7fffffff)
 
 // logic
-INSN(and,  2, W, W, W, M, M, M, dst &= src; cf = 0; of = 0) // imm
-INSN(or,   2, W, W, W, M, M, M, dst |= src; cf = 0; of = 0) // imm
-INSN(xor,  2, W, W, W, M, M, M, dst ^= src; cf = 0; of = 0) // imm
-INSN(not,  1, W, _, _, _, _, _, dst = ~dst)
+INSN(and, 2, DST|SRC, DST, 0, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, dst &= src; cf = 0; of = 0) // imm
+INSN(or,  2, DST|SRC, DST, 0, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, dst |= src; cf = 0; of = 0) // imm
+INSN(xor, 2, DST|SRC, DST, 0, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, dst ^= src; cf = 0; of = 0) // imm
+INSN(not, 1, DST,     DST, 0, 0,              0,              dst = ~dst)
 
 // flag control
-INSN(clc, 0, _, W, _, _, _, _, cf = 0)
-INSN(stc, 0, _, W, _, _, _, _, cf = 1)
-INSN(cmc, 0, _, W, _, _, _, _, cf = !cf)
+INSN(clc, 0, 0, 0, 0,  CF, CF, cf = 0)
+INSN(stc, 0, 0, 0, 0,  CF, CF, cf = 1)
+INSN(cmc, 0, 0, 0, CF, CF, CF, cf = !cf)
 
 // move
-INSN(mov, 2, W, _, _, _, _, _, dst = src) // imm
+INSN(mov, 2, SRC, DST, 0, 0, 0, dst = src) // imm
 
 // conditional move
-#define INSN_CMOV(NAME, COND) INSN(NAME, 2, W, _, _, _, _, _, if(COND) dst = src;)
+INSN(cmovc,  2, DST|SRC, DST, CF,       0, 0, if(cf) dst = src)
+INSN(cmovo,  2, DST|SRC, DST, OF,       0, 0, if(of) dst = src)
+INSN(cmovp,  2, DST|SRC, DST, PF,       0, 0, if(pf) dst = src)
+INSN(cmovs,  2, DST|SRC, DST, SF,       0, 0, if(sf) dst = src)
+INSN(cmovz,  2, DST|SRC, DST, ZF,       0, 0, if(zf) dst = src)
+INSN(cmovnc, 2, DST|SRC, DST, CF,       0, 0, if(!cf) dst = src)
+INSN(cmovno, 2, DST|SRC, DST, OF,       0, 0, if(!of) dst = src)
+INSN(cmovnp, 2, DST|SRC, DST, PF,       0, 0, if(!pf) dst = src)
+INSN(cmovns, 2, DST|SRC, DST, SF,       0, 0, if(!sf) dst = src)
+INSN(cmovnz, 2, DST|SRC, DST, ZF,       0, 0, if(!zf) dst = src)
+INSN(cmova,  2, DST|SRC, DST, CF|ZF,    0, 0, if(!cf && !zf) dst = src)      // above, unsigned
+INSN(cmovbe, 2, DST|SRC, DST, CF|ZF,    0, 0, if(cf || zf) dst = src)        // below or equal, unsigned
+INSN(cmovg,  2, DST|SRC, DST, OF|SF|ZF, 0, 0, if(!zf && sf == of) dst = src) // greater, signed
+INSN(cmovge, 2, DST|SRC, DST, OF|SF,    0, 0, if(sf == of) dst = src)        // greater or equal, signed
+INSN(cmovl,  2, DST|SRC, DST, OF|SF,    0, 0, if(sf != of) dst = src)        // less, signed
+INSN(cmovle, 2, DST|SRC, DST, OF|SF|ZF, 0, 0, if(zf || sf != of) dst = src)  // less or equal, signed
 
-// flags
-INSN_CMOV(cmovc,  cf)
-INSN_CMOV(cmovo,  of)
-INSN_CMOV(cmovp,  pf)
-INSN_CMOV(cmovs,  sf)
-INSN_CMOV(cmovz,  zf)
-INSN_CMOV(cmovnc, !cf)
-INSN_CMOV(cmovno, !of)
-INSN_CMOV(cmovnp, !pf)
-INSN_CMOV(cmovns, !sf)
-INSN_CMOV(cmovnz, !zf)
-
-// above, below (unsigned)
-INSN_CMOV(cmova,  !cf && !zf)
-INSN_CMOV(cmovbe, cf || zf)
+// other cmov forms:
 // ae=nc, b=c, na=be, nae=c, nb=nc, nbe=a
-
-// greater, less (signed)
-INSN_CMOV(cmovg,  !zf && sf == of)
-INSN_CMOV(cmovge, sf == of)
-INSN_CMOV(cmovl,  sf != of)
-INSN_CMOV(cmovle, zf || sf != of)
 // ng=le, nge=l, nl=ge, nle=g
-
-// equal
 // e=z, ne=zf
-
-// parity even, odd
 // pe=p, po=np
