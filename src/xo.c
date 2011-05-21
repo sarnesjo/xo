@@ -14,7 +14,7 @@ typedef enum
   XO_ACTION_SHOW_VERSION,
 } xo_action;
 
-void did_generate_program(const xo_program *program, void *userdata)
+void did_generate_program(const xo_program *program, xo_register_set input_regs, xo_register_set output_regs, void *userdata)
 {
   // TODO: test program for equivalence with goal program
   xo_program_print(program, "\n");
@@ -50,7 +50,7 @@ void generate_program(const char *goal_program_str)
   for(size_t num_invocations = 1; num_invocations <= goal_program->num_invocations; ++num_invocations) // TODO: consider measures of optimality besides insn count
   {
     fprintf(stderr, "%zu...\n", num_invocations);
-    xo_generator_generate_programs(num_invocations, did_generate_program, NULL);
+    xo_generator_generate_programs(num_invocations, input_regs, output_regs, did_generate_program, NULL);
   }
 
   xo_program_destroy(goal_program);
