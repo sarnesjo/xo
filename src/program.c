@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "insns.h"
 #include "invocation.h"
+#include "parser.h"
 #include "program.h"
 
 xo_program *xo_program_create(size_t num_invocations)
@@ -12,6 +13,22 @@ xo_program *xo_program_create(size_t num_invocations)
     prog->num_invocations = num_invocations;
     prog->invocations = malloc(num_invocations * sizeof(xo_invocation)); // TODO: check this malloc
   }
+  return prog;
+}
+
+static void did_parse_insn_(size_t i, const xo_instruction *insn, size_t r0, size_t r1, void *userdata)
+{
+  xo_program *prog = userdata;
+  xo_invocation_init(&prog->invocations[i], insn, r0, r1);
+}
+
+xo_program *xo_program_create_from_str(const char *input)
+{
+  size_t num_invocations = xo_parser_count_insns(input);
+  if(num_invocations == 0)
+    return NULL;
+  xo_program *prog = xo_program_create(num_invocations);
+  xo_parser_traverse(input, did_parse_insn_, prog);
   return prog;
 }
 
