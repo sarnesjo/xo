@@ -1,8 +1,7 @@
 #ifndef XO_TYPES_H
 #define XO_TYPES_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include "std.h"
 
 #define XO_REGISTER_NONE ((size_t)-1)
 

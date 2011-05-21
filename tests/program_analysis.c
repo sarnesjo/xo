@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include "check.h"
 #include "../src/program.h"
 

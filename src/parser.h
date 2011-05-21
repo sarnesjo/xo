@@ -1,7 +1,6 @@
 #ifndef XO_PARSER_H
 #define XO_PARSER_H
 
-#include <stdbool.h>
 #include "types.h"
 
 bool xo_parser_validate(const char *);

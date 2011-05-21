@@ -13,5 +13,6 @@ xo_SOURCES = \
              parser.h \
              program.c \
              program.h \
+             std.h \
              types.h \
              xo.c
