@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "generator.h"
 #include "insns.h"
 #include "instruction.h"
 #include "program.h"
@@ -46,13 +47,10 @@ void generate_program(const char *goal_program_str)
       fprintf(stderr, " r%zu", o);
   fprintf(stderr, "\n");
 
-  for(size_t num_insns = 1; num_insns <= goal_program->num_invocations; ++num_insns) // TODO: consider measures of optimality besides insn count
+  for(size_t num_invocations = 1; num_invocations <= goal_program->num_invocations; ++num_invocations) // TODO: consider measures of optimality besides insn count
   {
-    fprintf(stderr, "%zu...\n", num_insns);
-
-    xo_program *program = xo_program_create(num_insns);
-    xo_program_generate(program, did_generate_program, NULL);
-    xo_program_destroy(program);
+    fprintf(stderr, "%zu...\n", num_invocations);
+    xo_generator_generate_programs(num_invocations, did_generate_program, NULL);
   }
 
   xo_program_destroy(goal_program);
