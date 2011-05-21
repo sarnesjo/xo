@@ -56,10 +56,9 @@ void xo_program_print(const xo_program *prog, const char *suffix)
 
 // any register read from before written to is an input register
 // the last register written to is the output register
-// TODO: can't use uint8_t if XO_MACHINE_STATE_NUM_REGS > 8
-void xo_program_analyze(const xo_program *prog, uint8_t *input_regs, uint8_t *output_regs)
+void xo_program_analyze(const xo_program *prog, xo_register_set *input_regs, xo_register_set *output_regs)
 {
-  uint8_t iregs = 0, oreg = 0, written_regs = 0;
+  xo_register_set iregs = 0, oreg = 0, written_regs = 0;
 
   for(size_t i = 0; i < prog->num_invocations; ++i)
   {

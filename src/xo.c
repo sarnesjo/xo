@@ -29,20 +29,20 @@ void generate_program(const char *goal_program_str)
     exit(EXIT_FAILURE);
   }
 
-  uint8_t input_regs = 0, output_regs = 0;
+  xo_register_set input_regs = 0, output_regs = 0;
   xo_program_analyze(goal_program, &input_regs, &output_regs);
 
   fprintf(stderr, "goal program: ");
   xo_program_print(goal_program, "\n");
 
   fprintf(stderr, "input registers:");
-  for(size_t i = 0; i < XO_MACHINE_STATE_NUM_REGS; ++i)
+  for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
     if(input_regs & (1 << i))
       fprintf(stderr, " r%zu", i);
   fprintf(stderr, "\n");
 
   fprintf(stderr, "output register:");
-  for(size_t o = 0; o < XO_MACHINE_STATE_NUM_REGS; ++o)
+  for(size_t o = 0; o < XO_NUM_REGISTERS; ++o)
     if(output_regs & (1 << o))
       fprintf(stderr, " r%zu", o);
   fprintf(stderr, "\n");

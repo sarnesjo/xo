@@ -22,16 +22,16 @@ void generate_(xo_program *prog, size_t inv, xo_generator_callback callback, voi
           generate_(prog, inv+1, callback, userdata);
           break;
         case 1:
-          for(size_t r0 = 0; r0 < XO_MACHINE_STATE_NUM_REGS; ++r0)
+          for(size_t r0 = 0; r0 < XO_NUM_REGISTERS; ++r0)
           {
             xo_invocation_init(&prog->invocations[inv], insn, r0, XO_REGISTER_NONE);
             generate_(prog, inv+1, callback, userdata);
           }
           break;
         case 2:
-          for(size_t r0 = 0; r0 < XO_MACHINE_STATE_NUM_REGS; ++r0)
+          for(size_t r0 = 0; r0 < XO_NUM_REGISTERS; ++r0)
           {
-            for(size_t r1 = 0; r1 < XO_MACHINE_STATE_NUM_REGS; ++r1)
+            for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
             {
               xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
               generate_(prog, inv+1, callback, userdata);
