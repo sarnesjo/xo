@@ -12,4 +12,6 @@ void xo_program_print(const xo_program *, const char *);
 typedef void (*xo_program_callback)(const xo_program *, void *);
 void xo_program_generate(xo_program *, xo_program_callback, void *);
 
+void xo_program_analyze(const xo_program *, uint8_t *, uint8_t *);
+
 #endif
