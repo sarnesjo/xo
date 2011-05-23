@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "insns.h"
 #include "invocation.h"
 #include "parser.h"
 #include "program.h"
@@ -55,60 +54,11 @@ void xo_program_print(const xo_program *prog, const char *suffix)
   printf("%s", suffix);
 }
 
-void program_generate_(xo_program *prog, xo_program_callback callback, void *userdata, size_t inv)
-{
-  if(inv == prog->num_invocations)
-  {
-    callback(prog, userdata);
-  }
-  else
-  {
-    for(size_t i = 0; i < XO_NUM_INSNS; ++i)
-    {
-      xo_instruction *insn = &xo_insns[i];
-
-      switch(insn->arity)
-      {
-        case 0:
-          xo_invocation_init(&prog->invocations[inv], insn, XO_REGISTER_NONE, XO_REGISTER_NONE);
-          program_generate_(prog, callback, userdata, inv+1);
-          break;
-        case 1:
-          for(size_t r0 = 0; r0 < XO_MACHINE_STATE_NUM_REGS; ++r0)
-          {
-            xo_invocation_init(&prog->invocations[inv], insn, r0, XO_REGISTER_NONE);
-            program_generate_(prog, callback, userdata, inv+1);
-          }
-          break;
-        case 2:
-          for(size_t r0 = 0; r0 < XO_MACHINE_STATE_NUM_REGS; ++r0)
-          {
-            for(size_t r1 = 0; r1 < XO_MACHINE_STATE_NUM_REGS; ++r1)
-            {
-              xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
-              program_generate_(prog, callback, userdata, inv+1);
-            }
-          }
-          break;
-      }
-    }
-  }
-}
-
-void xo_program_generate(xo_program *prog, xo_program_callback callback, void *userdata)
-{
-  if(!prog)
-    return;
-
-  program_generate_(prog, callback, userdata, 0);
-}
-
 // any register read from before written to is an input register
 // the last register written to is the output register
-// TODO: can't use uint8_t if XO_MACHINE_STATE_NUM_REGS > 8
-void xo_program_analyze(const xo_program *prog, uint8_t *input_regs, uint8_t *output_regs)
+void xo_program_analyze(const xo_program *prog, xo_register_set *input_regs, xo_register_set *output_regs)
 {
-  uint8_t iregs = 0, oreg = 0, written_regs = 0;
+  xo_register_set iregs = 0, oreg = 0, written_regs = 0;
 
   for(size_t i = 0; i < prog->num_invocations; ++i)
   {

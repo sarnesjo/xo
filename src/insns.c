@@ -1,91 +1,23 @@
 #include <stdlib.h>
 #include "insns.h"
 
-// TODO: model undefined flag values
-// TODO: model imm
+#define DST (1 << 0)
+#define SRC (1 << 1)
 
-// The code to compute the parity of the LSB was taken from [Sean Eron Anderson's Bit Twiddling Hacks][1]
-// and modified slightly to yield a 1 for an *even* number of bits.
-// [1]: http://graphics.stanford.edu/~seander/bithacks.html#ParityParallel
+#define CF (1 << 0)
+#define OF (1 << 1)
+#define PF (1 << 2)
+#define SF (1 << 3)
+#define ZF (1 << 4)
 
-#define _ 0 // discard, do not update register/flag
-#define W 1 // write, update register/flag with the value assigned to it by the code snippet
-#define M 2 // (PF, SF, ZF only) modify, update flag automatically, based on the value assigned to dst by the code snippet
-
-// for simplicity, implementations of unary and nullary operations also take two arguments, which are to be ignored
-#define INSN(NAME, ARITY, DST, CF, OF, PF, SF, ZF, CODE)                   \
-void insn_##NAME(xo_machine_state *state, size_t r0, size_t r1)            \
-{                                                                          \
-  uint32_t dst = state->regs[r0];                                          \
-  uint32_t src = state->regs[r1];                                          \
-  uint32_t cf = state->cf;                                                 \
-  uint32_t of = state->of;                                                 \
-  uint32_t pf = state->pf;                                                 \
-  uint32_t sf = state->sf;                                                 \
-  uint32_t zf = state->zf;                                                 \
-  uint32_t tmp;                                                            \
-                                                                           \
-  CODE;                                                                    \
-                                                                           \
-  switch(DST)                                                              \
-  {                                                                        \
-    case _: break;                                                         \
-    case W: state->regs[r0] = dst; break;                                  \
-    default: abort();                                                      \
-  }                                                                        \
-                                                                           \
-  switch(CF)                                                               \
-  {                                                                        \
-    case _: break;                                                         \
-    case W: state->cf = cf; break;                                         \
-    default: abort();                                                      \
-  }                                                                        \
-                                                                           \
-  switch(OF)                                                               \
-  {                                                                        \
-    case _: break;                                                         \
-    case W: state->of = of; break;                                         \
-    default: abort();                                                      \
-  }                                                                        \
-                                                                           \
-  switch(PF)                                                               \
-  {                                                                        \
-    case _: break;                                                         \
-    case W: state->pf = pf; break;                                         \
-    case M: state->pf = (0x9669 >> ((dst ^ (dst >> 4)) & 0xf)) & 1; break; \
-    default: abort();                                                      \
-  }                                                                        \
-                                                                           \
-  switch(SF)                                                               \
-  {                                                                        \
-    case _: break;                                                         \
-    case W: state->sf = sf; break;                                         \
-    case M: state->sf = dst >> 31; break;                                  \
-    default: abort();                                                      \
-  }                                                                        \
-                                                                           \
-  switch(ZF)                                                               \
-  {                                                                        \
-    case _: break;                                                         \
-    case W: state->zf = zf; break;                                         \
-    case M: state->zf = !dst; break;                                       \
-    default: abort();                                                      \
-  }                                                                        \
-}
-
+// TODO: what to do about code? define here or elsewhere?
+#define INSN(NAME, ARITY, IREGS, OREGS, IFLAGS, OFLAGS, DFLAGS, CODE) void insn_##NAME(xo_machine_state *s, size_t r0, size_t r1) {}
 #include "insns.def"
-
 #undef INSN
 
-#undef _
-#undef W
-#undef M
-
-#define INSN(NAME, ARITY, DST, CF, OF, PF, SF, ZF, CODE) {#NAME, ARITY, insn_##NAME},
-
+#define INSN(NAME, ARITY, IREGS, OREGS, IFLAGS, OFLAGS, DFLAGS, CODE) {#NAME, ARITY, IREGS, OREGS, IFLAGS, OFLAGS, DFLAGS, insn_##NAME},
 xo_instruction xo_insns[] =
 {
 #include "insns.def"
 };
-
 #undef INSN

@@ -3,6 +3,8 @@ check_PROGRAMS = asm_input asm_input_insns asm_input_count program_analysis
 
 SOURCES = \
           check.h \
+          ../src/generator.c \
+          ../src/generator.h \
           ../src/insns.c \
           ../src/insns.def \
           ../src/insns.h \

@@ -1,5 +1,7 @@
 bin_PROGRAMS = xo
 xo_SOURCES = \
+             generator.c \
+             generator.h \
              insns.c \
              insns.def \
              insns.h \

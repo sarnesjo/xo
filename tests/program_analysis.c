@@ -11,13 +11,13 @@
 #define R7 (1 << 7)
 
 // test helper function
-static bool program_regs(const char *input, uint8_t expected_input_regs, uint8_t expected_output_regs)
+static bool program_regs(const char *input, xo_register_set expected_input_regs, xo_register_set expected_output_regs)
 {
   xo_program *prog = xo_program_create_from_str(input);
   if(!prog)
     return false;
 
-  uint8_t input_regs = 0, output_regs = 0;
+  xo_register_set input_regs = 0, output_regs = 0;
   xo_program_analyze(prog, &input_regs, &output_regs);
 
   if(input_regs != expected_input_regs || output_regs != expected_output_regs)
