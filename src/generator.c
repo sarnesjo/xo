@@ -1,9 +1,9 @@
+#include <string.h>
 #include "generator.h"
 #include "insns.h"
 #include "invocation.h"
 #include "program.h"
 
-// TODO: mov/cmov should never use r0 == r1
 // TODO: sbb/sub/xor with r0 == r1 don't really read input; how to handle?
 // TODO: model known flag values, rather than just defined/undefined? ex: if cf is known to be 0, such as after and/or/xor, don't generate adc/sbb
 
@@ -59,6 +59,9 @@ void generate_(xo_program *prog, size_t inv,
           for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
             if(live_regs & register_index_to_set_(r1))
             {
+              // TODO: this is a hack
+              if(strstr(insn->name, "cmov") && r0 == r1)
+                continue;
               xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
               callback(prog, input_regs, output_regs, userdata);
             }
@@ -104,6 +107,9 @@ void generate_(xo_program *prog, size_t inv,
                 for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
                   if(live_regs & register_index_to_set_(r1))
                   {
+                    // TODO: this is a hack
+                    if(strstr(insn->name, "cmov") && r0 == r1)
+                      continue;
                     xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
                     generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
                   }
