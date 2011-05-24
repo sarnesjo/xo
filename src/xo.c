@@ -17,7 +17,7 @@ typedef enum
 void did_generate_program(const xo_program *program, xo_register_set input_regs, xo_register_set output_regs, void *userdata)
 {
   // TODO: test program for equivalence with goal program
-  xo_program_print(program, "\n");
+  xo_program_print(stderr, program, "\n");
 }
 
 void generate_program(const char *goal_program_str)
@@ -33,7 +33,7 @@ void generate_program(const char *goal_program_str)
   xo_program_analyze(goal_program, &input_regs, &output_regs);
 
   fprintf(stderr, "goal program: ");
-  xo_program_print(goal_program, "\n");
+  xo_program_print(stderr, goal_program, "\n");
 
   fprintf(stderr, "input registers:");
   for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
@@ -59,7 +59,7 @@ void generate_program(const char *goal_program_str)
 void list_insns()
 {
   for(size_t i = 0; i < XO_NUM_INSNS; ++i)
-    xo_instruction_print(&xo_insns[i], "\n");
+    xo_instruction_print(stdout, &xo_insns[i], "\n");
 }
 
 void show_help()

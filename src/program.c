@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "invocation.h"
@@ -38,22 +37,6 @@ void xo_program_destroy(xo_program *prog)
   free(prog);
 }
 
-void xo_program_run(const xo_program *prog, xo_machine_state *st)
-{
-  for(size_t i = 0; i < prog->num_invocations; ++i)
-  {
-    xo_invocation *inv = &prog->invocations[i];
-    xo_invocation_invoke(inv, st);
-  }
-}
-
-void xo_program_print(const xo_program *prog, const char *suffix)
-{
-  for(size_t i = 0; i < prog->num_invocations; ++i)
-    xo_invocation_print(&prog->invocations[i], " ");
-  printf("%s", suffix);
-}
-
 // any register read from before written to is an input register
 // the last register written to is the output register
 void xo_program_analyze(const xo_program *prog, xo_register_set *input_regs, xo_register_set *output_regs)
@@ -89,4 +72,20 @@ void xo_program_analyze(const xo_program *prog, xo_register_set *input_regs, xo_
 
   if(output_regs)
     *output_regs = oreg;
+}
+
+void xo_program_run(const xo_program *prog, xo_machine_state *st)
+{
+  for(size_t i = 0; i < prog->num_invocations; ++i)
+  {
+    xo_invocation *inv = &prog->invocations[i];
+    xo_invocation_invoke(inv, st);
+  }
+}
+
+void xo_program_print(FILE *file, const xo_program *prog, const char *suffix)
+{
+  for(size_t i = 0; i < prog->num_invocations; ++i)
+    xo_invocation_print(file, &prog->invocations[i], " ");
+  fprintf(file, "%s", suffix);
 }
