@@ -9,8 +9,7 @@
 typedef uint8_t xo_register_set; // this should be defined as uintN_t, where N is XO_NUM_REGISTERS
 typedef uint8_t xo_flag_set;
 
-#pragma mark -
-#pragma mark machine state
+// machine state
 
 typedef struct
 {
@@ -22,8 +21,7 @@ typedef struct
   uint32_t zf;
 } xo_machine_state;
 
-#pragma mark -
-#pragma mark instruction
+// instruction
 
 typedef void (*xo_instruction_impl)(xo_machine_state *, size_t, size_t);
 
@@ -39,8 +37,7 @@ typedef struct
   xo_instruction_impl impl;
 } xo_instruction;
 
-#pragma mark -
-#pragma mark invocation
+// invocation
 
 typedef struct
 {
@@ -49,8 +46,7 @@ typedef struct
   size_t r1;
 } xo_invocation;
 
-#pragma mark -
-#pragma mark program
+// program
 
 typedef struct
 {
