@@ -6,20 +6,29 @@
 
 // TODO: model known flag values, rather than just defined/undefined? ex: if cf is known to be 0, such as after and/or/xor, don't generate adc/sbb
 
-// TODO: this should be moved elsewhere
+// TODO: these functions should be cleaned up and moved elsewhere
 
 xo_register_set register_index_to_set_(size_t i)
 {
   return (1 << i);
 }
 
-size_t register_set_to_index_(xo_register_set s)
+// TODO: there are faster ways of doing this
+size_t first_live_register_in_set_(xo_register_set s)
 {
-  // TODO: there are faster ways of doing this
-  size_t i = 0;
-  while(s >>= 1)
-    ++i;
-  return i;
+  for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
+    if((s & register_index_to_set_(i)) != 0)
+      return i;
+  return XO_REGISTER_NONE;
+}
+
+// TODO: there are faster ways of doing this
+size_t first_dead_register_in_set_(xo_register_set s)
+{
+  for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
+    if((s & register_index_to_set_(i)) == 0)
+      return i;
+  return XO_REGISTER_NONE;
 }
 
 // TODO: generate_ has become far too messy... a rewrite is in order
@@ -34,48 +43,66 @@ void generate_(xo_program *prog, size_t inv,
     {
       xo_instruction *insn = &xo_insns[i];
 
+      // if insn doesn't write to output reg, skip
       if(!insn->output_regs)
         continue;
 
-      // if output reg is not live, and insn reads from its output reg, skip
-      // (does not apply to sub/sbb/xor)
-      if((live_regs & output_regs) != output_regs && (insn->input_regs & insn->output_regs)
-          && (strcmp(insn->name, "sub") != 0) && (strcmp(insn->name, "sbb") != 0) && (strcmp(insn->name, "xor") != 0))
-        continue;
-
+      // if insn reads flags which are undefined, skip
       if((live_flags & insn->input_flags) != insn->input_flags)
         continue;
 
-      xo_flag_set new_live_flags = ((~insn->output_flags & live_flags) | (insn->output_flags & insn->defined_flags));
+      xo_flag_set new_live_flags = ((~insn->output_flags & live_flags) | (insn->output_flags & insn->live_output_flags));
 
-      size_t r0 = register_set_to_index_(output_regs); // assumes only one bit is set in output_regs
+      size_t r0 = first_live_register_in_set_(output_regs);
 
       switch(insn->arity)
       {
         case 1:
-          xo_invocation_init(&prog->invocations[inv], insn, r0, XO_REGISTER_NONE);
-          callback(prog, input_regs, output_regs, userdata);
-          break;
-        case 2:
-
-          // sub/sbb/xor can be invoked with a non-live register if r0 == r1
-          // TODO: this is a hack
-          if((strcmp(insn->name, "sub") == 0) || (strcmp(insn->name, "sbb") == 0) || (strcmp(insn->name, "xor") == 0))
+          if(live_regs & register_index_to_set_(r0))
           {
-            xo_invocation_init(&prog->invocations[inv], insn, r0, r0);
+            xo_invocation_init(&prog->invocations[inv], insn, r0, XO_REGISTER_NONE);
             callback(prog, input_regs, output_regs, userdata);
           }
-
-          for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
+          break;
+        case 2:
+          if(strcmp(insn->name, "mov") == 0)
           {
-            if(live_regs & register_index_to_set_(r1))
+            for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
             {
-              // cmov should never be invoked with r0 == r1
-              // TODO: this is a hack
-              if((strstr(insn->name, "cmov") == insn->name) && (r0 == r1))
+              if(r0 == r1)
                 continue;
-              xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
+
+              if(live_regs & register_index_to_set_(r1))
+              {
+                xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
+                callback(prog, input_regs, output_regs, userdata);
+              }
+            }
+          }
+          else
+          {
+            // sub/sbb/xor can be invoked with a non-live register if r0 == r1
+            // TODO: we should not call generate sub/sbb/xor with r0 == r1 normally (see comment about cmov below)
+            if((strcmp(insn->name, "sub") == 0) || (strcmp(insn->name, "sbb") == 0) || (strcmp(insn->name, "xor") == 0))
+            {
+              xo_invocation_init(&prog->invocations[inv], insn, r0, r0);
               callback(prog, input_regs, output_regs, userdata);
+            }
+
+            if(live_regs & register_index_to_set_(r0))
+            {
+              for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
+              {
+                // cmov should never be invoked with r0 == r1
+                if((r0 == r1) && (strstr(insn->name, "cmov") == insn->name))
+                  continue;
+
+                if(live_regs & register_index_to_set_(r1))
+                {
+                  xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
+                  callback(prog, input_regs, output_regs, userdata);
+                }
+              }
             }
           }
           break;
@@ -88,10 +115,11 @@ void generate_(xo_program *prog, size_t inv,
     {
       xo_instruction *insn = &xo_insns[i];
 
+      // if insn reads flags which are undefined, skip
       if((live_flags & insn->input_flags) != insn->input_flags)
         continue;
 
-      xo_flag_set new_live_flags = ((~insn->output_flags & live_flags) | (insn->output_flags & insn->defined_flags));
+      xo_flag_set new_live_flags = ((~insn->output_flags & live_flags) | (insn->output_flags & insn->live_output_flags));
 
       switch(insn->arity)
       {
@@ -110,49 +138,66 @@ void generate_(xo_program *prog, size_t inv,
           }
           break;
         case 2:
-
-          // TODO: these special rules for mov/sub/sbb/xor causes the set of live regs to grow, which is bad for performance... how to handle?
-
-          // mov should always write to a non-live register
-          // TODO: this is a hack
           if(strcmp(insn->name, "mov") == 0)
           {
-            size_t r0 = register_set_to_index_(~live_regs); // TODO: what if all regs are live?
-
-            for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
+            // mov should always write to a dead register...
             {
-              if(live_regs & register_index_to_set_(r1))
+              size_t r0 = first_dead_register_in_set_(live_regs); // TODO: what if all regs are live?
+
+              for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
               {
-                xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
-                generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
+                if(r0 == r1)
+                  continue;
+
+                if(live_regs & register_index_to_set_(r1))
+                {
+                  xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
+                  generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
+                }
+              }
+            }
+
+            // ... or the output register
+            {
+              size_t r0 = first_live_register_in_set_(output_regs);
+
+              for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
+              {
+                if(r0 == r1)
+                  continue;
+
+                if(live_regs & register_index_to_set_(r1))
+                {
+                  xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
+                  generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
+                }
               }
             }
           }
-
-          // sub/sbb/xor can be invoked with a non-live register if r0 == r1
-          // TODO: this is a hack
-          // TODO: we should not call generate sub/sbb/xor with r0 == r1 normally (see comment about cmov below)
-          else if((strcmp(insn->name, "sub") == 0) || (strcmp(insn->name, "sbb") == 0) || (strcmp(insn->name, "xor") == 0))
-          {
-            size_t r0 = register_set_to_index_(~live_regs); // TODO: what if all regs are live?
-            xo_invocation_init(&prog->invocations[inv], insn, r0, r0);
-            generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
-          }
-
           else
           {
+            // sub/sbb/xor can be invoked with a non-live register if r0 == r1
+            // TODO: we should not call generate sub/sbb/xor with r0 == r1 normally (see comment about cmov below)
+            if((strcmp(insn->name, "sub") == 0) || (strcmp(insn->name, "sbb") == 0) || (strcmp(insn->name, "xor") == 0))
+            {
+              size_t r0 = first_dead_register_in_set_(live_regs); // TODO: what if all regs are live?
+
+              xo_invocation_init(&prog->invocations[inv], insn, r0, r0);
+              generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
+            }
+
             for(size_t r0 = 0; r0 < XO_NUM_REGISTERS; ++r0)
             {
               if(live_regs & register_index_to_set_(r0))
               {
                 for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
                 {
+                  // cmov should never be invoked with r0 == r1
+                  if((r0 == r1) && (strstr(insn->name, "cmov") == insn->name))
+                    continue;
+
                   if(live_regs & register_index_to_set_(r1))
                   {
-                    // cmov should never be invoked with r0 == r1
-                    // TODO: this is a hack
-                    if((strstr(insn->name, "cmov") == insn->name) && (r0 == r1))
-                      continue;
                     xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
                     generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
                   }
