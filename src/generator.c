@@ -46,7 +46,7 @@ void generate_(xo_program *prog, size_t inv,
       if((live_flags & insn->input_flags) != insn->input_flags)
         continue;
 
-      xo_flag_set new_live_flags = ((~insn->output_flags & live_flags) | (insn->output_flags & insn->defined_flags));
+      xo_flag_set new_live_flags = ((~insn->output_flags & live_flags) | (insn->output_flags & insn->live_output_flags));
 
       size_t r0 = register_set_to_index_(output_regs); // assumes only one bit is set in output_regs
 
@@ -91,7 +91,7 @@ void generate_(xo_program *prog, size_t inv,
       if((live_flags & insn->input_flags) != insn->input_flags)
         continue;
 
-      xo_flag_set new_live_flags = ((~insn->output_flags & live_flags) | (insn->output_flags & insn->defined_flags));
+      xo_flag_set new_live_flags = ((~insn->output_flags & live_flags) | (insn->output_flags & insn->live_output_flags));
 
       switch(insn->arity)
       {

@@ -35,7 +35,7 @@ typedef struct
   xo_register_set output_regs;
   xo_flag_set input_flags;
   xo_flag_set output_flags;
-  xo_flag_set defined_flags;
+  xo_flag_set live_output_flags;
   xo_instruction_impl impl;
 } xo_instruction;
 
