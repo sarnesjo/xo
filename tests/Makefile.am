@@ -1,5 +1,10 @@
 TESTS = $(check_PROGRAMS)
-check_PROGRAMS = asm_input asm_input_insns asm_input_count program_analysis
+check_PROGRAMS = \
+                 asm_input \
+                 asm_input_insns \
+                 asm_input_count \
+                 program_analysis \
+                 program_generator
 
 SOURCES = \
           check.h \
@@ -25,3 +30,4 @@ asm_input_SOURCES = asm_input.c $(SOURCES)
 asm_input_insns_SOURCES = asm_input_insns.c $(SOURCES)
 asm_input_count_SOURCES = asm_input_count.c $(SOURCES)
 program_analysis_SOURCES = program_analysis.c $(SOURCES)
+program_generator_SOURCES = program_generator.c $(SOURCES)
