@@ -37,6 +37,16 @@ void xo_program_destroy(xo_program *prog)
   free(prog);
 }
 
+bool xo_program_equal(const xo_program *prog1, const xo_program *prog2)
+{
+  if(prog1->num_invocations != prog2->num_invocations)
+    return false;
+  for(size_t i = 0; i < prog1->num_invocations; ++i)
+    if(!xo_invocation_equal(&prog1->invocations[i], &prog2->invocations[i]))
+      return false;
+  return true;
+}
+
 // any register read from before written to is an input register
 // the last register written to is the output register
 void xo_program_analyze(const xo_program *prog, xo_register_set *input_regs, xo_register_set *output_regs)

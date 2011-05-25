@@ -7,6 +7,11 @@ void xo_invocation_init(xo_invocation *inv, const xo_instruction *insn, size_t r
   inv->r1 = r1;
 }
 
+bool xo_invocation_equal(const xo_invocation *inv1, const xo_invocation *inv2)
+{
+  return (inv1->insn == inv2->insn) && (inv1->r0 == inv2->r0) && (inv1->r1 == inv2->r1);
+}
+
 void xo_invocation_invoke(const xo_invocation *inv, xo_machine_state *st)
 {
   inv->insn->impl(st, inv->r0, inv->r1);
