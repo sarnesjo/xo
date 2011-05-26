@@ -1,5 +1,7 @@
 bin_PROGRAMS = xo
 xo_SOURCES = \
+             flag_set.c \
+             flag_set.h \
              generator.c \
              generator.h \
              insns.c \

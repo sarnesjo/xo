@@ -8,6 +8,8 @@ check_PROGRAMS = \
 
 SOURCES = \
           check.h \
+          ../src/flag_set.c \
+          ../src/flag_set.h \
           ../src/generator.c \
           ../src/generator.h \
           ../src/insns.c \
