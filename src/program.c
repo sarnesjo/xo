@@ -84,7 +84,7 @@ void xo_program_analyze(const xo_program *prog, xo_register_set *input_regs, xo_
     *output_regs = oreg;
 }
 
-void xo_program_run(const xo_program *prog, xo_machine_state *st)
+void xo_program_run_on_state(const xo_program *prog, xo_machine_state *st)
 {
   for(size_t i = 0; i < prog->num_invocations; ++i)
   {
