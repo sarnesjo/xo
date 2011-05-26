@@ -5,6 +5,8 @@
 #include "insns.h"
 #include "instruction.h"
 #include "program.h"
+#include "register_set.h"
+#include "test_states.h"
 
 typedef enum
 {
@@ -14,10 +16,19 @@ typedef enum
   XO_ACTION_SHOW_VERSION,
 } xo_action;
 
+typedef struct
+{
+  size_t output_reg_index;
+  uint32_t return_values[XO_NUM_TEST_STATES];
+} program_callback_userdata;
+
 void did_generate_program(const xo_program *program, xo_register_set input_regs, xo_register_set output_regs, void *userdata)
 {
-  // TODO: test program for equivalence with goal program
-  xo_program_print(stderr, program, "\n");
+  program_callback_userdata *pcu = userdata;
+  for(size_t i = 0; i < XO_NUM_TEST_STATES; ++i)
+    if(xo_program_return_value_for_state(program, &xo_test_states[i], pcu->output_reg_index) != pcu->return_values[i])
+      return;
+  xo_program_print(stdout, program, "\n");
 }
 
 void generate_program(const char *goal_program_str)
@@ -47,10 +58,17 @@ void generate_program(const char *goal_program_str)
       fprintf(stderr, " r%zu", o);
   fprintf(stderr, "\n");
 
-  for(size_t num_invocations = 1; num_invocations <= goal_program->num_invocations; ++num_invocations) // TODO: consider measures of optimality besides insn count
+  program_callback_userdata pcu;
+  pcu.output_reg_index = xo_register_set_first_live_index(output_regs);
+
+  for(size_t i = 0; i < XO_NUM_TEST_STATES; ++i)
+    pcu.return_values[i] = xo_program_return_value_for_state(goal_program, &xo_test_states[i], pcu.output_reg_index);
+
+  // TODO: consider measures of optimality besides insn count
+  for(size_t num_invocations = 1; num_invocations <= goal_program->num_invocations; ++num_invocations)
   {
     fprintf(stderr, "%zu...\n", num_invocations);
-    xo_generator_generate_programs(num_invocations, input_regs, output_regs, did_generate_program, NULL);
+    xo_generator_generate_programs(num_invocations, input_regs, output_regs, did_generate_program, &pcu);
   }
 
   xo_program_destroy(goal_program);
