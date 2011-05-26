@@ -23,6 +23,8 @@ SOURCES = \
           ../src/parser.h \
           ../src/program.c \
           ../src/program.h \
+          ../src/register_set.c \
+          ../src/register_set.h \
           ../src/std.h \
           ../src/types.h
 
