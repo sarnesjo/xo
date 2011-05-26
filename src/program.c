@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "invocation.h"
+#include "machine_state.h"
 #include "parser.h"
 #include "program.h"
+#include "register_set.h"
 
 xo_program *xo_program_create(size_t num_invocations)
 {
@@ -35,16 +37,6 @@ void xo_program_destroy(xo_program *prog)
 {
   free(prog->invocations);
   free(prog);
-}
-
-bool xo_program_equal(const xo_program *prog1, const xo_program *prog2)
-{
-  if(prog1->num_invocations != prog2->num_invocations)
-    return false;
-  for(size_t i = 0; i < prog1->num_invocations; ++i)
-    if(!xo_invocation_equal(&prog1->invocations[i], &prog2->invocations[i]))
-      return false;
-  return true;
 }
 
 // any register read from before written to is an input register
@@ -84,6 +76,39 @@ void xo_program_analyze(const xo_program *prog, xo_register_set *input_regs, xo_
     *output_regs = oreg;
 }
 
+bool xo_program_equal(const xo_program *prog1, const xo_program *prog2)
+{
+  if(prog1->num_invocations != prog2->num_invocations)
+    return false;
+  for(size_t i = 0; i < prog1->num_invocations; ++i)
+    if(!xo_invocation_equal(&prog1->invocations[i], &prog2->invocations[i]))
+      return false;
+  return true;
+}
+
+bool xo_program_equivalent_on_states(const xo_program *prog1, const xo_program *prog2, size_t num_states, const xo_machine_state *states)
+{
+  xo_register_set output_reg_set_1, output_reg_set_2;
+
+  xo_program_analyze(prog1, NULL, &output_reg_set_1);
+  xo_program_analyze(prog2, NULL, &output_reg_set_2);
+
+  if(output_reg_set_1 != output_reg_set_2)
+    return false; // TODO: signal error?
+
+  size_t output_reg_index = xo_register_set_first_live_index(output_reg_set_1);
+
+  for(size_t i = 0; i < num_states; ++i)
+  {
+    uint32_t v1 = xo_program_return_value_for_state(prog1, &states[i], output_reg_index);
+    uint32_t v2 = xo_program_return_value_for_state(prog2, &states[i], output_reg_index);
+
+    if(v1 != v2)
+      return false;
+  }
+  return true;
+}
+
 void xo_program_run_on_state(const xo_program *prog, xo_machine_state *st)
 {
   for(size_t i = 0; i < prog->num_invocations; ++i)
@@ -91,6 +116,14 @@ void xo_program_run_on_state(const xo_program *prog, xo_machine_state *st)
     xo_invocation *inv = &prog->invocations[i];
     xo_invocation_invoke(inv, st);
   }
+}
+
+uint32_t xo_program_return_value_for_state(const xo_program *prog, const xo_machine_state *st, size_t output_reg_index)
+{
+  xo_machine_state st_copy;
+  xo_machine_state_copy(&st_copy, st);
+  xo_program_run_on_state(prog, &st_copy);
+  return st_copy.regs[output_reg_index];
 }
 
 void xo_program_print(FILE *file, const xo_program *prog, const char *suffix)
