@@ -1,15 +1,16 @@
 #include "check.h"
 #include "../src/generator.h"
 #include "../src/program.h"
+#include "../src/register_set.h"
 
-#define R0 (1 << 0)
-#define R1 (1 << 1)
-#define R2 (1 << 2)
-#define R3 (1 << 3)
-#define R4 (1 << 4)
-#define R5 (1 << 5)
-#define R6 (1 << 6)
-#define R7 (1 << 7)
+#define R0 XO_REGISTER_SET_R0
+#define R1 XO_REGISTER_SET_R1
+#define R2 XO_REGISTER_SET_R2
+#define R3 XO_REGISTER_SET_R3
+#define R4 XO_REGISTER_SET_R4
+#define R5 XO_REGISTER_SET_R5
+#define R6 XO_REGISTER_SET_R6
+#define R7 XO_REGISTER_SET_R7
 
 typedef struct
 {

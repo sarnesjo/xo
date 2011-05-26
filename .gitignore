@@ -16,5 +16,7 @@ src/xo
 tests/asm_input
 tests/asm_input_count
 tests/asm_input_insns
+tests/insn_impl_c
 tests/program_analysis
+tests/program_equivalence_c
 tests/program_generator

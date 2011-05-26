@@ -33,7 +33,8 @@ INSN(sbb, 2, DST|SRC, DST, CF, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, tmp = dst - (src 
 
 INSN(cmp, 2, DST|SRC, 0,   0,  CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, tmp = dst - src;
                                                                cf = tmp > dst;
-                                                               of = S(dst) != S(src) && S(dst) != S(tmp)) // imm
+                                                               of = S(dst) != S(src) && S(dst) != S(tmp);
+                                                               dst = tmp) // imm
 
 #undef S
 
@@ -47,8 +48,8 @@ INSN(xor, 2, DST|SRC, DST, 0, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF, dst ^= src; cf = 0
 INSN(not, 1, DST,     DST, 0, 0,              0,              dst = ~dst)
 
 // flag control
-INSN(clc, 0, 0, 0, 0,  CF, CF, cf = 0)
 INSN(stc, 0, 0, 0, 0,  CF, CF, cf = 1)
+INSN(clc, 0, 0, 0, 0,  CF, CF, cf = 0)
 INSN(cmc, 0, 0, 0, CF, CF, CF, cf = !cf)
 
 // move

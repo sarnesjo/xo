@@ -14,11 +14,7 @@ typedef uint8_t xo_flag_set;
 typedef struct
 {
   uint32_t regs[XO_NUM_REGISTERS];
-  uint32_t cf;
-  uint32_t of;
-  uint32_t pf;
-  uint32_t sf;
-  uint32_t zf;
+  xo_flag_set flags;
 } xo_machine_state;
 
 // instruction

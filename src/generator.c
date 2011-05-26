@@ -3,33 +3,9 @@
 #include "insns.h"
 #include "invocation.h"
 #include "program.h"
+#include "register_set.h"
 
 // TODO: model known flag values, rather than just defined/undefined? ex: if cf is known to be 0, such as after and/or/xor, don't generate adc/sbb
-
-// TODO: these functions should be cleaned up and moved elsewhere
-
-xo_register_set register_index_to_set_(size_t i)
-{
-  return (1 << i);
-}
-
-// TODO: there are faster ways of doing this
-size_t first_live_register_in_set_(xo_register_set s)
-{
-  for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
-    if((s & register_index_to_set_(i)) != 0)
-      return i;
-  return XO_REGISTER_NONE;
-}
-
-// TODO: there are faster ways of doing this
-size_t first_dead_register_in_set_(xo_register_set s)
-{
-  for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
-    if((s & register_index_to_set_(i)) == 0)
-      return i;
-  return XO_REGISTER_NONE;
-}
 
 // TODO: generate_ has become far too messy... a rewrite is in order
 // TODO: generate_ misbehaves when output_regs == 0; how to handle?
@@ -53,12 +29,12 @@ void generate_(xo_program *prog, size_t inv,
 
       xo_flag_set new_live_flags = ((~insn->output_flags & live_flags) | (insn->output_flags & insn->live_output_flags));
 
-      size_t r0 = first_live_register_in_set_(output_regs);
+      size_t r0 = xo_register_set_first_live_index(output_regs);
 
       switch(insn->arity)
       {
         case 1:
-          if(live_regs & register_index_to_set_(r0))
+          if(live_regs & xo_register_set_from_index(r0))
           {
             xo_invocation_init(&prog->invocations[inv], insn, r0, XO_REGISTER_NONE);
             callback(prog, input_regs, output_regs, userdata);
@@ -72,7 +48,7 @@ void generate_(xo_program *prog, size_t inv,
               if(r0 == r1)
                 continue;
 
-              if(live_regs & register_index_to_set_(r1))
+              if(live_regs & xo_register_set_from_index(r1))
               {
                 xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
                 callback(prog, input_regs, output_regs, userdata);
@@ -89,7 +65,7 @@ void generate_(xo_program *prog, size_t inv,
               callback(prog, input_regs, output_regs, userdata);
             }
 
-            if(live_regs & register_index_to_set_(r0))
+            if(live_regs & xo_register_set_from_index(r0))
             {
               for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
               {
@@ -97,7 +73,7 @@ void generate_(xo_program *prog, size_t inv,
                 if((r0 == r1) && (strstr(insn->name, "cmov") == insn->name))
                   continue;
 
-                if(live_regs & register_index_to_set_(r1))
+                if(live_regs & xo_register_set_from_index(r1))
                 {
                   xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
                   callback(prog, input_regs, output_regs, userdata);
@@ -130,10 +106,10 @@ void generate_(xo_program *prog, size_t inv,
         case 1:
           for(size_t r0 = 0; r0 < XO_NUM_REGISTERS; ++r0)
           {
-            if(live_regs & register_index_to_set_(r0))
+            if(live_regs & xo_register_set_from_index(r0))
             {
               xo_invocation_init(&prog->invocations[inv], insn, r0, XO_REGISTER_NONE);
-              generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
+              generate_(prog, inv+1, input_regs, output_regs, live_regs | xo_register_set_from_index(r0), new_live_flags, callback, userdata);
             }
           }
           break;
@@ -142,34 +118,34 @@ void generate_(xo_program *prog, size_t inv,
           {
             // mov should always write to a dead register...
             {
-              size_t r0 = first_dead_register_in_set_(live_regs); // TODO: what if all regs are live?
+              size_t r0 = xo_register_set_first_dead_index(live_regs); // TODO: what if all regs are live?
 
               for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
               {
                 if(r0 == r1)
                   continue;
 
-                if(live_regs & register_index_to_set_(r1))
+                if(live_regs & xo_register_set_from_index(r1))
                 {
                   xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
-                  generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
+                  generate_(prog, inv+1, input_regs, output_regs, live_regs | xo_register_set_from_index(r0), new_live_flags, callback, userdata);
                 }
               }
             }
 
             // ... or the output register
             {
-              size_t r0 = first_live_register_in_set_(output_regs);
+              size_t r0 = xo_register_set_first_live_index(output_regs);
 
               for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
               {
                 if(r0 == r1)
                   continue;
 
-                if(live_regs & register_index_to_set_(r1))
+                if(live_regs & xo_register_set_from_index(r1))
                 {
                   xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
-                  generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
+                  generate_(prog, inv+1, input_regs, output_regs, live_regs | xo_register_set_from_index(r0), new_live_flags, callback, userdata);
                 }
               }
             }
@@ -180,15 +156,15 @@ void generate_(xo_program *prog, size_t inv,
             // TODO: we should not call generate sub/sbb/xor with r0 == r1 normally (see comment about cmov below)
             if((strcmp(insn->name, "sub") == 0) || (strcmp(insn->name, "sbb") == 0) || (strcmp(insn->name, "xor") == 0))
             {
-              size_t r0 = first_dead_register_in_set_(live_regs); // TODO: what if all regs are live?
+              size_t r0 = xo_register_set_first_dead_index(live_regs); // TODO: what if all regs are live?
 
               xo_invocation_init(&prog->invocations[inv], insn, r0, r0);
-              generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
+              generate_(prog, inv+1, input_regs, output_regs, live_regs | xo_register_set_from_index(r0), new_live_flags, callback, userdata);
             }
 
             for(size_t r0 = 0; r0 < XO_NUM_REGISTERS; ++r0)
             {
-              if(live_regs & register_index_to_set_(r0))
+              if(live_regs & xo_register_set_from_index(r0))
               {
                 for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
                 {
@@ -196,10 +172,10 @@ void generate_(xo_program *prog, size_t inv,
                   if((r0 == r1) && (strstr(insn->name, "cmov") == insn->name))
                     continue;
 
-                  if(live_regs & register_index_to_set_(r1))
+                  if(live_regs & xo_register_set_from_index(r1))
                   {
                     xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
-                    generate_(prog, inv+1, input_regs, output_regs, live_regs | register_index_to_set_(r0), new_live_flags, callback, userdata);
+                    generate_(prog, inv+1, input_regs, output_regs, live_regs | xo_register_set_from_index(r0), new_live_flags, callback, userdata);
                   }
                 }
               }
