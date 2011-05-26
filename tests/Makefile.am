@@ -29,6 +29,8 @@ SOURCES = \
           ../src/register_set.c \
           ../src/register_set.h \
           ../src/std.h \
+          ../src/test_states.c \
+          ../src/test_states.h \
           ../src/types.h
 
 asm_input_SOURCES = asm_input.c $(SOURCES)

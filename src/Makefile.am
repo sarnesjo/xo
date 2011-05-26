@@ -20,5 +20,7 @@ xo_SOURCES = \
              register_set.c \
              register_set.h \
              std.h \
+             test_states.c \
+             test_states.h \
              types.h \
              xo.c
