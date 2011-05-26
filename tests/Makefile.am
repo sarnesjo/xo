@@ -5,7 +5,8 @@ check_PROGRAMS = \
                  asm_input_count \
                  program_analysis \
                  program_generator \
-                 insn_impl_c
+                 insn_impl_c \
+                 program_equivalence_c
 
 SOURCES = \
           check.h \
@@ -39,3 +40,4 @@ asm_input_count_SOURCES = asm_input_count.c $(SOURCES)
 program_analysis_SOURCES = program_analysis.c $(SOURCES)
 program_generator_SOURCES = program_generator.c $(SOURCES)
 insn_impl_c_SOURCES = insn_impl_c.c $(SOURCES)
+program_equivalence_c_SOURCES = program_equivalence_c.c $(SOURCES)
