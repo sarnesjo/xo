@@ -399,3 +399,46 @@ void xo_bdd_evaluate_program_on_state(const xo_program *prog, xo_machine_state *
 
   bdd_done();
 }
+
+bool xo_bdd_equivalent_programs(const xo_program *prog1, const xo_program *prog2)
+{
+  xo_register_set ro_set_1, ro_set_2;
+
+  xo_program_analyze(prog1, NULL, &ro_set_1);
+  xo_program_analyze(prog2, NULL, &ro_set_2);
+
+  if(ro_set_1 != ro_set_2)
+    return false;
+
+  bdd_init(1000000, 100000); // TODO: good values?
+  bdd_setvarnum(XO_NUM_REGISTERS*NUM_BITS);
+
+  bdd r[2][XO_NUM_REGISTERS][NUM_BITS], f[2][NUM_FLAGS];
+
+  int index = 0;
+  for(int bi = 0; bi < NUM_BITS; ++bi)
+    for(int ri = 0; ri < XO_NUM_REGISTERS; ++ri)
+      r[0][ri][bi] = r[1][ri][bi] = bdd_ithvar(index++);
+
+  bdd_from_flag_set_(f[0], 0);
+  bdd_from_flag_set_(f[1], 0);
+
+  evaluate_program_(prog1, r[0], f[0]);
+  evaluate_program_(prog2, r[1], f[1]);
+
+  size_t ro_index = xo_register_set_first_live_index(ro_set_1);
+  bool equiv = true;
+
+  for(size_t i = 0; i < NUM_BITS; ++i)
+  {
+    if(r[0][ro_index][i] != r[1][ro_index][i])
+    {
+      equiv = false;
+      break;
+    }
+  }
+
+  bdd_done();
+
+  return equiv;
+}

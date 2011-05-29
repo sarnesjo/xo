@@ -7,7 +7,8 @@ check_PROGRAMS = \
                  program_generator \
                  insn_impl_c \
                  program_equivalence_c \
-                 insn_impl_bdd
+                 insn_impl_bdd \
+                 program_equivalence_bdd
 
 SOURCES = \
           check.h \
@@ -47,6 +48,10 @@ insn_impl_c_SOURCES = insn_impl.c $(SOURCES)
 insn_impl_c_CFLAGS = -DXO_TEST_C
 
 program_equivalence_c_SOURCES = program_equivalence.c $(SOURCES)
+program_equivalence_c_CFLAGS = -DXO_TEST_C
 
 insn_impl_bdd_SOURCES = insn_impl.c $(SOURCES)
 insn_impl_bdd_CFLAGS = -DXO_TEST_BDD
+
+program_equivalence_bdd_SOURCES = program_equivalence.c $(SOURCES)
+program_equivalence_bdd_CFLAGS = -DXO_TEST_BDD
