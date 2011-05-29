@@ -1,4 +1,5 @@
 #include "check.h"
+#include "../src/bdd_wrapper.hpp"
 #include "../src/flag_set.h"
 #include "../src/machine_state.h"
 #include "../src/program.h"
@@ -9,21 +10,28 @@
 #define SF XO_FLAG_SET_SF
 #define ZF XO_FLAG_SET_ZF
 
-// test helper function
 static bool expected_output(const char *input_prog_str,
     uint32_t input_r0, uint32_t input_r1, xo_flag_set input_flags,
     uint32_t expected_output_r0, xo_flag_set expected_output_flags)
 {
   xo_program *prog = xo_program_create_from_str(input_prog_str);
-  if(!prog)
-    return false;
 
   xo_machine_state st;
   xo_machine_state_init(&st, 0xdeadbeef, input_flags);
   st.regs[0] = input_r0;
   st.regs[1] = input_r1;
 
+#if XO_TEST_C
+
   xo_program_run_on_state(prog, &st);
+
+#elif XO_TEST_BDD
+
+  xo_bdd_evaluate_program_on_state(prog, &st);
+
+#else
+#error
+#endif
 
   if(st.regs[0] != expected_output_r0 || st.flags != expected_output_flags)
   {

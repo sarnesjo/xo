@@ -1,5 +1,7 @@
 bin_PROGRAMS = xo
 xo_SOURCES = \
+             bdd_wrapper.cpp \
+             bdd_wrapper.hpp \
              flag_set.c \
              flag_set.h \
              generator.c \
