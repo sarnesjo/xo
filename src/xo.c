@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "bdd_wrapper.hpp"
 #include "generator.h"
 #include "insns.h"
 #include "instruction.h"
@@ -18,11 +19,15 @@ typedef enum
 
 void did_generate_program(const xo_program *program, xo_register_set input_regs, xo_register_set output_regs, void *userdata)
 {
-  uint32_t *return_values = userdata;
-  for(size_t i = 0; i < XO_NUM_TEST_STATES; ++i)
-    if(xo_program_return_value_for_state(program, &xo_test_states[i], xo_register_set_first_live_index(output_regs)) != return_values[i])
-      return;
-  xo_program_print(stdout, program, "\n");
+  xo_program *goal_program = userdata;
+
+  if(xo_program_equivalent_on_states(goal_program, program, XO_NUM_TEST_STATES, xo_test_states))
+  {
+    xo_program_print(stdout, program, "?\n");
+
+    if(xo_bdd_equivalent_programs(goal_program, program))
+      xo_program_print(stdout, program, "!\n");
+  }
 }
 
 void generate_program(const char *goal_program_str)
@@ -52,16 +57,11 @@ void generate_program(const char *goal_program_str)
       fprintf(stderr, " r%zu", o);
   fprintf(stderr, "\n");
 
-  uint32_t return_values[XO_NUM_TEST_STATES];
-
-  for(size_t i = 0; i < XO_NUM_TEST_STATES; ++i)
-    return_values[i] = xo_program_return_value_for_state(goal_program, &xo_test_states[i], xo_register_set_first_live_index(output_regs));
-
   // TODO: consider measures of optimality besides insn count
   for(size_t num_invocations = 1; num_invocations <= goal_program->num_invocations; ++num_invocations)
   {
     fprintf(stderr, "%zu...\n", num_invocations);
-    xo_generator_generate_programs(num_invocations, input_regs, output_regs, did_generate_program, return_values);
+    xo_generator_generate_programs(num_invocations, input_regs, output_regs, did_generate_program, goal_program);
   }
 
   xo_program_destroy(goal_program);

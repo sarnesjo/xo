@@ -1,14 +1,24 @@
 #include "check.h"
+#include "../src/bdd_wrapper.hpp"
 #include "../src/program.h"
 #include "../src/test_states.h"
 
-// test helper function
 static bool equivalent(const char *prog_str_1, const char *prog_str_2)
 {
   xo_program *prog1 = xo_program_create_from_str(prog_str_1);
   xo_program *prog2 = xo_program_create_from_str(prog_str_2);
 
+#if XO_TEST_C
+
   bool equiv = xo_program_equivalent_on_states(prog1, prog2, XO_NUM_TEST_STATES, xo_test_states);
+
+#elif XO_TEST_BDD
+
+  bool equiv = xo_bdd_equivalent_programs(prog1, prog2);
+
+#else
+#error
+#endif
 
   xo_program_destroy(prog1);
   xo_program_destroy(prog2);
