@@ -2,6 +2,8 @@
 #include "insns.h"
 #include "instruction.h"
 #include "machine_state.h"
+#include "program.h"
+#include "register_set.h"
 
 static uint32_t pf_(uint32_t a)
 {
