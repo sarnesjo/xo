@@ -12,11 +12,6 @@ bool xo_invocation_equal(const xo_invocation *inv1, const xo_invocation *inv2)
   return (inv1->insn == inv2->insn) && (inv1->r0 == inv2->r0) && (inv1->r1 == inv2->r1);
 }
 
-void xo_invocation_invoke(const xo_invocation *inv, xo_machine_state *st)
-{
-  inv->insn->impl(st, inv->r0, inv->r1);
-}
-
 void xo_invocation_print(FILE *file, const xo_invocation *inv, const char *suffix)
 {
   if(inv->r0 != XO_REGISTER_NONE && inv->r1 != XO_REGISTER_NONE)

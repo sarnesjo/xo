@@ -1,13 +1,14 @@
 bin_PROGRAMS = xo
 xo_SOURCES = \
-             bdd_wrapper.cpp \
-             bdd_wrapper.hpp \
+             equivalence_checker_bdd.cpp \
+             equivalence_checker_bdd.h \
+             equivalence_checker_c.c \
+             equivalence_checker_c.h \
              flag_set.c \
              flag_set.h \
              generator.c \
              generator.h \
              insns.c \
-             insns.def \
              insns.h \
              instruction.c \
              instruction.h \
