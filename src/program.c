@@ -9,11 +9,19 @@
 xo_program *xo_program_create(size_t num_invocations)
 {
   xo_program *prog = malloc(sizeof(xo_program));
-  if(prog)
+
+  if(!prog)
+    return NULL;
+
+  prog->num_invocations = num_invocations;
+  prog->invocations = malloc(num_invocations * sizeof(xo_invocation));
+
+  if(!prog->invocation)
   {
-    prog->num_invocations = num_invocations;
-    prog->invocations = malloc(num_invocations * sizeof(xo_invocation)); // TODO: check this malloc
+    free(prog);
+    return NULL;
   }
+
   return prog;
 }
 
@@ -35,6 +43,9 @@ xo_program *xo_program_create_from_str(const char *input)
 
 void xo_program_destroy(xo_program *prog)
 {
+  if(!prog)
+    return;
+
   free(prog->invocations);
   free(prog);
 }
