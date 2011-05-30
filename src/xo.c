@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "bdd_wrapper.hpp"
+#include "equivalence_checker_c.h"
 #include "generator.h"
 #include "insns.h"
 #include "instruction.h"
@@ -21,10 +22,13 @@ void did_generate_program(const xo_program *program, xo_register_set input_regs,
 {
   xo_program *goal_program = userdata;
 
-  // TODO
+  if(xo_equivalence_checker_c_programs_equivalent_on_states(goal_program, program, XO_NUM_TEST_STATES, xo_test_states))
+  {
+    xo_program_print(stdout, program, "?\n");
 
-  if(xo_bdd_equivalent_programs(goal_program, program))
-    xo_program_print(stdout, program, "!\n");
+    if(xo_bdd_equivalent_programs(goal_program, program))
+      xo_program_print(stdout, program, "!\n");
+  }
 }
 
 void generate_program(const char *goal_program_str)

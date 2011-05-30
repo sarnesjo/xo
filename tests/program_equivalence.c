@@ -1,5 +1,6 @@
 #include "check.h"
 #include "../src/bdd_wrapper.hpp"
+#include "../src/equivalence_checker_c.h"
 #include "../src/program.h"
 #include "../src/test_states.h"
 
@@ -10,7 +11,7 @@ static bool equivalent(const char *prog_str_1, const char *prog_str_2)
 
 #if XO_TEST_C
 
-  bool equiv = false; // TODO
+  bool equiv = xo_equivalence_checker_c_programs_equivalent_on_states(prog1, prog2, XO_NUM_TEST_STATES, xo_test_states);
 
 #elif XO_TEST_BDD
 
