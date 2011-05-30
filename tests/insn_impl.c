@@ -23,7 +23,7 @@ static bool expected_output(const char *input_prog_str,
 
 #if XO_TEST_C
 
-  xo_program_run_on_state(prog, &st);
+  // TODO
 
 #elif XO_TEST_BDD
 

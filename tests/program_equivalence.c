@@ -10,7 +10,7 @@ static bool equivalent(const char *prog_str_1, const char *prog_str_2)
 
 #if XO_TEST_C
 
-  bool equiv = xo_program_equivalent_on_states(prog1, prog2, XO_NUM_TEST_STATES, xo_test_states);
+  bool equiv = false; // TODO
 
 #elif XO_TEST_BDD
 
