@@ -12,89 +12,99 @@
 
 typedef enum
 {
-  XO_ACTION_GENERATE_PROGRAM,
+  XO_ACTION_GENERATE_PROGRAMS,
   XO_ACTION_LIST_INSNS,
   XO_ACTION_SHOW_HELP,
   XO_ACTION_SHOW_VERSION,
 } xo_action;
 
-void did_generate_program(const xo_program *program, xo_register_set input_regs, xo_register_set output_regs, void *userdata)
+static int verbosity_ = 0;
+
+static void did_generate_program_(const xo_program *program, xo_register_set input_regs, xo_register_set output_regs, void *userdata)
 {
-  xo_program *goal_program = userdata;
+  xo_program *input_program = userdata;
 
-  if(xo_equivalence_checker_c_programs_equivalent_on_states(goal_program, program, XO_NUM_TEST_STATES, xo_test_states))
+  if(verbosity_ >= 2)
+    xo_program_print(stderr, program, "?\n");
+
+  if(xo_equivalence_checker_c_programs_equivalent_on_states(input_program, program, XO_NUM_TEST_STATES, xo_test_states))
   {
-    xo_program_print(stdout, program, "?\n");
+    if(verbosity_ >= 1)
+      xo_program_print(stderr, program, "!\n");
 
-    if(xo_equivalence_checker_bdd_programs_equivalent(goal_program, program))
-      xo_program_print(stdout, program, "!\n");
+    if(xo_equivalence_checker_bdd_programs_equivalent(input_program, program))
+      xo_program_print(stdout, program, "!!\n");
   }
 }
 
-void generate_program(const char *goal_program_str)
+static void generate_programs_(const char *input_program_str, size_t max_num_invocations)
 {
-  xo_program *goal_program = xo_program_create_from_str(goal_program_str);
-  if(!goal_program)
+  xo_program *input_program = xo_program_create_from_str(input_program_str);
+  if(!input_program)
   {
-    fprintf(stderr, "invalid goal program\n");
+    fprintf(stderr, "invalid input program\n");
     exit(EXIT_FAILURE);
   }
 
   xo_register_set input_regs = 0, output_regs = 0;
-  xo_program_analyze(goal_program, &input_regs, &output_regs);
+  xo_program_analyze(input_program, &input_regs, &output_regs);
 
-  fprintf(stderr, "goal program: ");
-  xo_program_print(stderr, goal_program, "\n");
-
-  fprintf(stderr, "input registers:");
-  for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
-    if(input_regs & (1 << i))
-      fprintf(stderr, " r%zu", i);
-  fprintf(stderr, "\n");
-
-  fprintf(stderr, "output register:");
-  for(size_t o = 0; o < XO_NUM_REGISTERS; ++o)
-    if(output_regs & (1 << o))
-      fprintf(stderr, " r%zu", o);
-  fprintf(stderr, "\n");
-
-  // TODO: consider measures of optimality besides insn count
-  for(size_t num_invocations = 1; num_invocations <= goal_program->num_invocations; ++num_invocations)
+  if(verbosity_ >= 1)
   {
-    fprintf(stderr, "%zu...\n", num_invocations);
-    xo_generator_generate_programs(num_invocations, input_regs, output_regs, did_generate_program, goal_program);
+    fprintf(stderr, "input program: ");
+    xo_program_print(stderr, input_program, "\n");
+
+    fprintf(stderr, "input registers:");
+    for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
+      if(input_regs & (1 << i))
+        fprintf(stderr, " r%zu", i);
+    fprintf(stderr, "\n");
+
+    fprintf(stderr, "output register:");
+    for(size_t o = 0; o < XO_NUM_REGISTERS; ++o)
+      if(output_regs & (1 << o))
+        fprintf(stderr, " r%zu", o);
+    fprintf(stderr, "\n");
   }
 
-  xo_program_destroy(goal_program);
+  for(size_t num_invocations = 1; num_invocations <= max_num_invocations; ++num_invocations)
+  {
+    if(verbosity_ >= 1)
+      fprintf(stderr, "%zu...\n", num_invocations);
+
+    xo_generator_generate_programs(num_invocations, input_regs, output_regs, did_generate_program_, input_program);
+  }
+
+  xo_program_destroy(input_program);
 }
 
-void list_insns()
+static void list_insns_()
 {
   for(size_t i = 0; i < XO_NUM_INSNS; ++i)
     xo_instruction_print(stdout, &xo_insns[i], "\n");
 }
 
-void show_help()
+static void show_help_()
 {
   printf("usage:\n");
-  printf("\t%s [-qv] GOAL_PROGRAM\n", PACKAGE_NAME);
+  printf("\t%s [-m M] [-qv] PROGRAM\n", PACKAGE_NAME);
   printf("\t%s -L\n", PACKAGE_NAME);
   printf("\t%s -H\n", PACKAGE_NAME);
   printf("\t%s -V\n", PACKAGE_NAME);
 }
 
-void show_version()
+static void show_version_()
 {
   printf("%s\n", PACKAGE_STRING);
 }
 
 int main(int argc, char *argv[])
 {
-  xo_action action = XO_ACTION_GENERATE_PROGRAM;
-  int verbosity;
+  xo_action action = XO_ACTION_GENERATE_PROGRAMS;
+  size_t max_num_invocations = 5;
 
   int o;
-  while((o = getopt(argc, argv, "LHVqv")) != -1)
+  while((o = getopt(argc, argv, "LHVm:qv")) != -1)
   {
     switch(o)
     {
@@ -107,11 +117,14 @@ int main(int argc, char *argv[])
       case 'V':
         action = XO_ACTION_SHOW_VERSION;
         break;
+      case 'm':
+        max_num_invocations = strtol(optarg, NULL, 10);
+        break;
       case 'q':
-        --verbosity;
+        --verbosity_;
         break;
       case 'v':
-        ++verbosity;
+        ++verbosity_;
         break;
       default:
         exit(1);
@@ -120,22 +133,22 @@ int main(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  if(action == XO_ACTION_GENERATE_PROGRAM && argc != 1)
+  if(action == XO_ACTION_GENERATE_PROGRAMS && argc != 1)
     action = XO_ACTION_SHOW_HELP;
 
   switch(action)
   {
-    case XO_ACTION_GENERATE_PROGRAM:
-      generate_program(argv[0]);
+    case XO_ACTION_GENERATE_PROGRAMS:
+      generate_programs_(argv[0], max_num_invocations);
       break;
     case XO_ACTION_LIST_INSNS:
-      list_insns();
+      list_insns_();
       break;
     case XO_ACTION_SHOW_HELP:
-      show_help();
+      show_help_();
       break;
     case XO_ACTION_SHOW_VERSION:
-      show_version();
+      show_version_();
       break;
   }
 
