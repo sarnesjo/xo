@@ -5,7 +5,7 @@
 #include "program.h"
 #include "register_set.h"
 
-static uint32_t pf_(uint32_t a)
+static xo_register pf_(xo_register a)
 {
   // This code was taken from [Sean Eron Anderson's Bit Twiddling Hacks][1]
   // and modified slightly to yield a 1 for an *even* number of bits.
@@ -14,19 +14,19 @@ static uint32_t pf_(uint32_t a)
   return ((0x9669 >> ((a ^ (a >> 4)) & 0xf)) & 0x1);
 }
 
-static uint32_t sf_(uint32_t a)
+static xo_register sf_(xo_register a)
 {
-  return (a >> 31);
+  return (a >> (XO_NUM_BITS-1));
 }
 
-static uint32_t zf_(uint32_t a)
+static xo_register zf_(xo_register a)
 {
   return !a;
 }
 
 static void insn_add_(xo_machine_state *st, size_t r0, size_t r1)
 {
-  uint32_t tmp = st->regs[r0] + st->regs[r1];
+  xo_register tmp = st->regs[r0] + st->regs[r1];
 
   xo_machine_state_set_cf(st, tmp < st->regs[r0]);
   xo_machine_state_set_of(st, sf_(st->regs[r0]) == sf_(st->regs[r1]) && sf_(st->regs[r0]) != sf_(tmp));
@@ -39,9 +39,9 @@ static void insn_add_(xo_machine_state *st, size_t r0, size_t r1)
 
 static void insn_adc_(xo_machine_state *st, size_t r0, size_t r1)
 {
-  uint32_t cf = xo_machine_state_get_cf(st);
+  xo_register cf = xo_machine_state_get_cf(st);
 
-  uint32_t tmp = st->regs[r0] + st->regs[r1] + cf;
+  xo_register tmp = st->regs[r0] + st->regs[r1] + cf;
 
   xo_machine_state_set_cf(st, cf ? tmp <= st->regs[r0] : tmp < st->regs[r0]);
   xo_machine_state_set_of(st, sf_(st->regs[r0]) == sf_(st->regs[r1]) && sf_(st->regs[r0]) != sf_(tmp));
@@ -54,7 +54,7 @@ static void insn_adc_(xo_machine_state *st, size_t r0, size_t r1)
 
 static void insn_sub_(xo_machine_state *st, size_t r0, size_t r1)
 {
-  uint32_t tmp = st->regs[r0] - st->regs[r1];
+  xo_register tmp = st->regs[r0] - st->regs[r1];
 
   xo_machine_state_set_cf(st, tmp > st->regs[r0]);
   xo_machine_state_set_of(st, sf_(st->regs[r0]) != sf_(st->regs[r1]) && sf_(st->regs[r0]) != sf_(tmp));
@@ -67,9 +67,9 @@ static void insn_sub_(xo_machine_state *st, size_t r0, size_t r1)
 
 static void insn_sbb_(xo_machine_state *st, size_t r0, size_t r1)
 {
-  uint32_t cf = xo_machine_state_get_cf(st);
+  xo_register cf = xo_machine_state_get_cf(st);
 
-  uint32_t tmp = st->regs[r0] - (st->regs[r1] + cf);
+  xo_register tmp = st->regs[r0] - (st->regs[r1] + cf);
 
   xo_machine_state_set_cf(st, cf ? tmp >= st->regs[r0] : tmp > st->regs[r0]);
   xo_machine_state_set_of(st, sf_(st->regs[r0]) != sf_(st->regs[r1]) && sf_(st->regs[r0]) != sf_(tmp));
@@ -82,7 +82,7 @@ static void insn_sbb_(xo_machine_state *st, size_t r0, size_t r1)
 
 static void insn_cmp_(xo_machine_state *st, size_t r0, size_t r1)
 {
-  uint32_t tmp = st->regs[r0] - st->regs[r1];
+  xo_register tmp = st->regs[r0] - st->regs[r1];
 
   xo_machine_state_set_cf(st, tmp > st->regs[r0]);
   xo_machine_state_set_of(st, sf_(st->regs[r0]) != sf_(st->regs[r1]) && sf_(st->regs[r0]) != sf_(tmp));
@@ -262,7 +262,7 @@ void xo_equivalence_checker_c_run_program_on_state(const xo_program *prog, xo_ma
   }
 }
 
-static uint32_t return_value_(const xo_program *prog, const xo_machine_state *st, size_t ro_index)
+static xo_register return_value_(const xo_program *prog, const xo_machine_state *st, size_t ro_index)
 {
   xo_machine_state st_copy;
   xo_machine_state_copy(&st_copy, st);
@@ -285,8 +285,8 @@ bool xo_equivalence_checker_c_programs_equivalent_on_states(const xo_program *pr
 
   for(size_t i = 0; i < num_states; ++i)
   {
-    uint32_t v1 = return_value_(prog1, &states[i], ro_index);
-    uint32_t v2 = return_value_(prog2, &states[i], ro_index);
+    xo_register v1 = return_value_(prog1, &states[i], ro_index);
+    xo_register v2 = return_value_(prog2, &states[i], ro_index);
 
     if(v1 != v2)
       return false;

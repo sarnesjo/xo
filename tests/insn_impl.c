@@ -12,8 +12,8 @@
 #define ZF XO_FLAG_SET_ZF
 
 static bool expected_output(const char *input_prog_str,
-    uint32_t input_r0, uint32_t input_r1, xo_flag_set input_flags,
-    uint32_t expected_output_r0, xo_flag_set expected_output_flags)
+    xo_register input_r0, xo_register input_r1, xo_flag_set input_flags,
+    xo_register expected_output_r0, xo_flag_set expected_output_flags)
 {
   xo_program *prog = xo_program_create_from_str(input_prog_str);
 

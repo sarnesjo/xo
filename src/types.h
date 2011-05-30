@@ -3,17 +3,22 @@
 
 #include "std.h"
 
-#define XO_REGISTER_NONE ((size_t)-1)
-#define XO_NUM_REGISTERS 8
+// these values should not be changed
+#define XO_NUM_BITS 32
+#define XO_NUM_FLAGS 5
 
-typedef uint8_t xo_register_set; // this should be defined as uintN_t, where N is XO_NUM_REGISTERS
-typedef uint8_t xo_flag_set;
+#define XO_NUM_REGISTERS 8
+#define XO_REGISTER_NONE ((size_t)-1)
+
+typedef uint32_t xo_register;    // should be defined as uintN_t, where N == XO_NUM_BITS
+typedef uint8_t xo_register_set; // should be defined as uintN_t, where N == XO_NUM_REGISTERS
+typedef uint8_t xo_flag_set;     // should be defined as uintN_t, where N >= XO_NUM_FLAGS
 
 // machine state
 
 typedef struct
 {
-  uint32_t regs[XO_NUM_REGISTERS];
+  xo_register regs[XO_NUM_REGISTERS];
   xo_flag_set flags;
 } xo_machine_state;
 

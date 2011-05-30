@@ -1,33 +1,31 @@
 #include <bdd.h>
 #include "equivalence_checker_bdd.h"
 
-// TODO: use defs from types.h?
-#define NUM_BITS 32
-#define NUM_FLAGS 5
+// TODO: much of this code assumes that XO_NUM_BITS == 32
 
 // converting BDDs to and from register and flag values
 
-static uint32_t bdd_to_uint32_(const bdd a[NUM_BITS])
+static xo_register bdd_to_register_(const bdd a[XO_NUM_BITS])
 {
-  uint32_t u = 0;
-  for(int i = 0; i < NUM_BITS; ++i)
+  xo_register r = 0;
+  for(int i = 0; i < XO_NUM_BITS; ++i)
     if(!(a[i] == bdd_true() || a[i] == bdd_false()))
       abort(); // TODO: warn if neither bdd_true nor bdd_false?
     else if(a[i] == bdd_true())
-      u |= (1 << i);
-  return u;
+      r |= (1 << i);
+  return r;
 }
 
-static void bdd_from_uint32_(bdd a[NUM_BITS], uint32_t u)
+static void bdd_from_register_(bdd a[XO_NUM_BITS], xo_register r)
 {
-  for(int i = 0; i < NUM_BITS; ++i)
-    a[i] = (u & (1 << i)) ? bdd_true() : bdd_false();
+  for(int i = 0; i < XO_NUM_BITS; ++i)
+    a[i] = (r & (1 << i)) ? bdd_true() : bdd_false();
 }
 
-static xo_flag_set bdd_to_flag_set_(const bdd a[NUM_FLAGS])
+static xo_flag_set bdd_to_flag_set_(const bdd a[XO_NUM_FLAGS])
 {
   xo_flag_set s = 0;
-  for(int i = 0; i < NUM_FLAGS; ++i)
+  for(int i = 0; i < XO_NUM_FLAGS; ++i)
     if(!(a[i] == bdd_true() || a[i] == bdd_false()))
       abort(); // TODO: warn if neither bdd_true nor bdd_false?
     else if(a[i] == bdd_true())
@@ -35,26 +33,25 @@ static xo_flag_set bdd_to_flag_set_(const bdd a[NUM_FLAGS])
   return s;
 }
 
-static void bdd_from_flag_set_(bdd a[NUM_FLAGS], xo_flag_set s)
+static void bdd_from_flag_set_(bdd a[XO_NUM_FLAGS], xo_flag_set s)
 {
-  for(int i = 0; i < NUM_FLAGS; ++i)
+  for(int i = 0; i < XO_NUM_FLAGS; ++i)
     a[i] = (s & (1 << i)) ? bdd_true() : bdd_false();
 }
 
 // parity, sign and zero flag
-// TODO: assumes that NUM_BITS == 32
 
-static bdd pf_(const bdd a[NUM_BITS])
+static bdd pf_(const bdd a[XO_NUM_BITS])
 {
   return !(a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] ^ a[6] ^ a[7]);
 }
 
-static bdd sf_(const bdd a[NUM_BITS])
+static bdd sf_(const bdd a[XO_NUM_BITS])
 {
   return a[31];
 }
 
-static bdd zf_(const bdd a[NUM_BITS])
+static bdd zf_(const bdd a[XO_NUM_BITS])
 {
   return !(a[ 0] | a[ 1] | a[ 2] | a[ 3] | a[ 4] | a[ 5] | a[ 6] | a[ 7] | a[ 8] | a[ 9]
          | a[10] | a[11] | a[12] | a[13] | a[14] | a[15] | a[16] | a[17] | a[18] | a[19]
@@ -66,14 +63,14 @@ static bdd zf_(const bdd a[NUM_BITS])
 
 // TODO: there is a lot of code duplication between add/adc/inc, sub/sbb/dec
 
-static void insn_add_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_add_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  bdd c[NUM_BITS];
+  bdd c[XO_NUM_BITS];
 
   c[0] = r0[0] & r1[0];
   r0[0] = r0[0] ^ r1[0];
 
-  for(int i = 1; i < NUM_BITS; ++i)
+  for(int i = 1; i < XO_NUM_BITS; ++i)
   {
     c[i] = r0[i] & r1[i] | r0[i] & c[i-1] | r1[i] & c[i-1];
     r0[i] = r0[i] ^ r1[i] ^ c[i-1];
@@ -86,14 +83,14 @@ static void insn_add_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
   f[4] = zf_(r0);
 }
 
-static void insn_adc_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_adc_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  bdd c[NUM_BITS];
+  bdd c[XO_NUM_BITS];
 
   c[0] = r0[0] & r1[0] | r0[0] & f[0] | r1[0] & f[0];
   r0[0] = r0[0] ^ r1[0] ^ f[0];
 
-  for(int i = 1; i < NUM_BITS; ++i)
+  for(int i = 1; i < XO_NUM_BITS; ++i)
   {
     c[i] = r0[i] & r1[i] | r0[i] & c[i-1] | r1[i] & c[i-1];
     r0[i] = r0[i] ^ r1[i] ^ c[i-1];
@@ -106,14 +103,14 @@ static void insn_adc_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
   f[4] = zf_(r0);
 }
 
-static void insn_sub_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_sub_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  bdd c[NUM_BITS];
+  bdd c[XO_NUM_BITS];
 
   c[0] = !r0[0] & r1[0];
   r0[0] = r0[0] ^ r1[0];
 
-  for(int i = 1; i < NUM_BITS; ++i)
+  for(int i = 1; i < XO_NUM_BITS; ++i)
   {
     c[i] = !r0[i] & r1[i] | !r0[i] & c[i-1] | r1[i] & c[i-1];
     r0[i] = r0[i] ^ r1[i] ^ c[i-1];
@@ -126,14 +123,14 @@ static void insn_sub_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
   f[4] = zf_(r0);
 }
 
-static void insn_sbb_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_sbb_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  bdd c[NUM_BITS];
+  bdd c[XO_NUM_BITS];
 
   c[0] = !r0[0] & r1[0] | !r0[0] & f[0] | r1[0] & f[0];
   r0[0] = r0[0] ^ r1[0] ^ f[0];
 
-  for(int i = 1; i < NUM_BITS; ++i)
+  for(int i = 1; i < XO_NUM_BITS; ++i)
   {
     c[i] = !r0[i] & r1[i] | !r0[i] & c[i-1] | r1[i] & c[i-1];
     r0[i] = r0[i] ^ r1[i] ^ c[i-1];
@@ -146,15 +143,15 @@ static void insn_sbb_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
   f[4] = zf_(r0);
 }
 
-static void insn_cmp_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_cmp_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  bdd c[NUM_BITS];
-  bdd tmp[NUM_BITS];
+  bdd c[XO_NUM_BITS];
+  bdd tmp[XO_NUM_BITS];
 
   c[0] = !r0[0] & r1[0];
   tmp[0] = r0[0] ^ r1[0];
 
-  for(int i = 1; i < NUM_BITS; ++i)
+  for(int i = 1; i < XO_NUM_BITS; ++i)
   {
     c[i] = !r0[i] & r1[i] | !r0[i] & c[i-1] | r1[i] & c[i-1];
     tmp[i] = r0[i] ^ r1[i] ^ c[i-1];
@@ -167,14 +164,14 @@ static void insn_cmp_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
   f[4] = zf_(tmp);
 }
 
-static void insn_inc_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_inc_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  bdd c[NUM_BITS];
+  bdd c[XO_NUM_BITS];
 
   c[0] = r0[0] & bdd_true();
   r0[0] = r0[0] ^ bdd_true();
 
-  for(int i = 1; i < NUM_BITS; ++i)
+  for(int i = 1; i < XO_NUM_BITS; ++i)
   {
     c[i] = r0[i] & bdd_false() | r0[i] & c[i-1] | bdd_false() & c[i-1];
     r0[i] = r0[i] ^ bdd_false() ^ c[i-1];
@@ -186,14 +183,14 @@ static void insn_inc_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
   f[4] = zf_(r0);
 }
 
-static void insn_dec_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_dec_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  bdd c[NUM_BITS];
+  bdd c[XO_NUM_BITS];
 
   c[0] = !r0[0] & bdd_true();
   r0[0] = r0[0] ^ bdd_true();
 
-  for(int i = 1; i < NUM_BITS; ++i)
+  for(int i = 1; i < XO_NUM_BITS; ++i)
   {
     c[i] = !r0[i] & bdd_false() | !r0[i] & c[i-1] | bdd_false() & c[i-1];
     r0[i] = r0[i] ^ bdd_false() ^ c[i-1];
@@ -205,9 +202,9 @@ static void insn_dec_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
   f[4] = zf_(r0);
 }
 
-static void insn_and_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_and_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  for(int i = 0; i < NUM_BITS; ++i)
+  for(int i = 0; i < XO_NUM_BITS; ++i)
     r0[i] = r0[i] & r1[i];
 
   f[0] = bdd_false();
@@ -217,9 +214,9 @@ static void insn_and_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
   f[4] = zf_(r0);
 }
 
-static void insn_or_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_or_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  for(int i = 0; i < NUM_BITS; ++i)
+  for(int i = 0; i < XO_NUM_BITS; ++i)
     r0[i] = r0[i] | r1[i];
 
   f[0] = bdd_false();
@@ -229,9 +226,9 @@ static void insn_or_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
   f[4] = zf_(r0);
 }
 
-static void insn_xor_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_xor_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  for(int i = 0; i < NUM_BITS; ++i)
+  for(int i = 0; i < XO_NUM_BITS; ++i)
     r0[i] = r0[i] ^ r1[i];
 
   f[0] = bdd_false();
@@ -241,38 +238,38 @@ static void insn_xor_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
   f[4] = zf_(r0);
 }
 
-static void insn_not_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_not_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  for(int i = 0; i < NUM_BITS; ++i)
+  for(int i = 0; i < XO_NUM_BITS; ++i)
     r0[i] = !r0[i];
 }
 
-static void insn_stc_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_stc_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
   f[0] = bdd_true();
 }
 
-static void insn_clc_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_clc_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
   f[0] = bdd_false();
 }
 
-static void insn_cmc_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_cmc_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
   f[0] = !f[0];
 }
 
-static void insn_mov_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS])
+static void insn_mov_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
-  for(int i = 0; i < NUM_BITS; ++i)
+  for(int i = 0; i < XO_NUM_BITS; ++i)
     r0[i] = r1[i];
 }
 
 #define CMOV(NAME, COND) \
-  static void insn_cmov##NAME##_(bdd r0[NUM_BITS], bdd r1[NUM_BITS], bdd f[NUM_FLAGS]) \
+  static void insn_cmov##NAME##_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS]) \
   { \
     bdd cond = (COND); \
-    for(int i = 0; i < NUM_BITS; ++i) \
+    for(int i = 0; i < XO_NUM_BITS; ++i) \
       r0[i] = !cond & r0[i] | cond & r1[i]; \
   }
 
@@ -344,7 +341,7 @@ bdd_impl_ impl_for_insn_(const xo_instruction *insn)
   return impls[insn->id];
 }
 
-static void evaluate_program_(const xo_program *prog, bdd r[XO_NUM_REGISTERS][NUM_BITS], bdd f[NUM_FLAGS])
+static void evaluate_program_(const xo_program *prog, bdd r[XO_NUM_REGISTERS][XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
   for(size_t i = 0; i < prog->num_invocations; ++i)
   {
@@ -358,16 +355,16 @@ void xo_equivalence_checker_bdd_evaluate_program_on_state(const xo_program *prog
 {
   bdd_init(1000, 100); // TODO: good values?
 
-  bdd r[XO_NUM_REGISTERS][NUM_BITS], f[NUM_FLAGS];
+  bdd r[XO_NUM_REGISTERS][XO_NUM_BITS], f[XO_NUM_FLAGS];
 
   for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
-    bdd_from_uint32_(r[i], st->regs[i]);
+    bdd_from_register_(r[i], st->regs[i]);
   bdd_from_flag_set_(f, st->flags);
 
   evaluate_program_(prog, r, f);
 
   for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
-    st->regs[i] = bdd_to_uint32_(r[i]);
+    st->regs[i] = bdd_to_register_(r[i]);
   st->flags = bdd_to_flag_set_(f);
 
   bdd_done();
@@ -384,12 +381,12 @@ bool xo_equivalence_checker_bdd_programs_equivalent(const xo_program *prog1, con
     return false;
 
   bdd_init(1000000, 100000); // TODO: good values?
-  bdd_setvarnum(XO_NUM_REGISTERS*NUM_BITS);
+  bdd_setvarnum(XO_NUM_REGISTERS*XO_NUM_BITS);
 
-  bdd r[2][XO_NUM_REGISTERS][NUM_BITS], f[2][NUM_FLAGS];
+  bdd r[2][XO_NUM_REGISTERS][XO_NUM_BITS], f[2][XO_NUM_FLAGS];
 
   int index = 0;
-  for(int bi = 0; bi < NUM_BITS; ++bi)
+  for(int bi = 0; bi < XO_NUM_BITS; ++bi)
     for(int ri = 0; ri < XO_NUM_REGISTERS; ++ri)
       r[0][ri][bi] = r[1][ri][bi] = bdd_ithvar(index++);
 
@@ -402,7 +399,7 @@ bool xo_equivalence_checker_bdd_programs_equivalent(const xo_program *prog1, con
   size_t ro_index = xo_register_set_first_live_index(ro_set_1);
   bool equiv = true;
 
-  for(size_t i = 0; i < NUM_BITS; ++i)
+  for(size_t i = 0; i < XO_NUM_BITS; ++i)
   {
     if(r[0][ro_index][i] != r[1][ro_index][i])
     {

@@ -1,7 +1,7 @@
 #include "flag_set.h"
 #include "machine_state.h"
 
-void xo_machine_state_init(xo_machine_state *st, uint32_t reg_value, xo_flag_set set_flags)
+void xo_machine_state_init(xo_machine_state *st, xo_register reg_value, xo_flag_set set_flags)
 {
   for(size_t i = 0; i < XO_NUM_REGISTERS; ++i)
     st->regs[i] = reg_value;
@@ -24,54 +24,54 @@ void xo_machine_state_print(FILE *file, const xo_machine_state *st, const char *
 
 // flag getters
 
-uint32_t xo_machine_state_get_cf(const xo_machine_state *st)
+xo_register xo_machine_state_get_cf(const xo_machine_state *st)
 {
   return !!(st->flags & XO_FLAG_SET_CF);
 }
 
-uint32_t xo_machine_state_get_of(const xo_machine_state *st)
+xo_register xo_machine_state_get_of(const xo_machine_state *st)
 {
   return !!(st->flags & XO_FLAG_SET_OF);
 }
 
-uint32_t xo_machine_state_get_pf(const xo_machine_state *st)
+xo_register xo_machine_state_get_pf(const xo_machine_state *st)
 {
   return !!(st->flags & XO_FLAG_SET_PF);
 }
 
-uint32_t xo_machine_state_get_sf(const xo_machine_state *st)
+xo_register xo_machine_state_get_sf(const xo_machine_state *st)
 {
   return !!(st->flags & XO_FLAG_SET_SF);
 }
 
-uint32_t xo_machine_state_get_zf(const xo_machine_state *st)
+xo_register xo_machine_state_get_zf(const xo_machine_state *st)
 {
   return !!(st->flags & XO_FLAG_SET_ZF);
 }
 
 // flag setters
 
-void xo_machine_state_set_cf(xo_machine_state *st, uint32_t f)
+void xo_machine_state_set_cf(xo_machine_state *st, xo_register f)
 {
   st->flags = (st->flags & ~XO_FLAG_SET_CF) | (f << XO_FLAG_OFFSET_CF);
 }
 
-void xo_machine_state_set_of(xo_machine_state *st, uint32_t f)
+void xo_machine_state_set_of(xo_machine_state *st, xo_register f)
 {
   st->flags = (st->flags & ~XO_FLAG_SET_OF) | (f << XO_FLAG_OFFSET_OF);
 }
 
-void xo_machine_state_set_pf(xo_machine_state *st, uint32_t f)
+void xo_machine_state_set_pf(xo_machine_state *st, xo_register f)
 {
   st->flags = (st->flags & ~XO_FLAG_SET_PF) | (f << XO_FLAG_OFFSET_PF);
 }
 
-void xo_machine_state_set_sf(xo_machine_state *st, uint32_t f)
+void xo_machine_state_set_sf(xo_machine_state *st, xo_register f)
 {
   st->flags = (st->flags & ~XO_FLAG_SET_SF) | (f << XO_FLAG_OFFSET_SF);
 }
 
-void xo_machine_state_set_zf(xo_machine_state *st, uint32_t f)
+void xo_machine_state_set_zf(xo_machine_state *st, xo_register f)
 {
   st->flags = (st->flags & ~XO_FLAG_SET_ZF) | (f << XO_FLAG_OFFSET_ZF);
 }
