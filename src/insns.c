@@ -1,11 +1,13 @@
-#include <stdlib.h>
 #include "flag_set.h"
 #include "insns.h"
 
-// TODO: decouple insn metadata and C impl?
+// TODO: implement mul, imul? cf/of: !!(result & 0xffff0000)
+// TODO: implement neg
+// TODO: implement lea
+// TODO: implement rotate and shift insns
 
-#define DST (1 << 0)
-#define SRC (1 << 1)
+#define R0 (1 << 0)
+#define R1 (1 << 1)
 
 #define CF XO_FLAG_SET_CF
 #define OF XO_FLAG_SET_OF
@@ -13,67 +15,58 @@
 #define SF XO_FLAG_SET_SF
 #define ZF XO_FLAG_SET_ZF
 
-// The code to compute the parity of the LSB was taken from [Sean Eron Anderson's Bit Twiddling Hacks][1]
-// and modified slightly to yield a 1 for an *even* number of bits.
-// [1]: http://graphics.stanford.edu/~seander/bithacks.html#ParityParallel
-
-#define INSN(NAME, ARITY, IREGS, OREGS, IFLAGS, OFLAGS, DFLAGS, CODE) \
-  void insn_##NAME(xo_machine_state *st, size_t r0, size_t r1) \
-  { \
-    uint32_t tmp = 0; \
-    uint32_t dst = st->regs[r0]; \
-    uint32_t src = st->regs[r1]; \
-    uint32_t cf = !!(st->flags & CF); \
-    uint32_t of = !!(st->flags & OF); \
-    uint32_t pf = !!(st->flags & PF); \
-    uint32_t sf = !!(st->flags & SF); \
-    uint32_t zf = !!(st->flags & ZF); \
-    CODE; \
-    if((OFLAGS) & CF) \
-    { \
-      st->flags = ((st->flags & ~CF) | cf); \
-    } \
-    if((OFLAGS) & OF) \
-    { \
-      st->flags = ((st->flags & ~OF) | (of << 1)); \
-    } \
-    if((OFLAGS) & PF) \
-    { \
-      pf = (0x9669 >> ((dst ^ (dst >> 4)) & 0xf)) & 1; \
-      st->flags = ((st->flags & ~PF) | (pf << 2)); \
-    } \
-    if((OFLAGS) & SF) \
-    { \
-      sf = dst >> 31; \
-      st->flags = ((st->flags & ~SF) | (sf << 3)); \
-    } \
-    if((OFLAGS) & ZF) \
-    { \
-      zf = !dst; \
-      st->flags = ((st->flags & ~ZF) | (zf << 4)); \
-    } \
-    if(OREGS) \
-    { \
-      st->regs[r0] = dst; \
-    } \
-  }
-
-#include "insns.def"
-
-#undef INSN
-
-#define INSN(NAME, ARITY, IREGS, OREGS, IFLAGS, OFLAGS, DFLAGS, CODE) \
-  {#NAME, ARITY, IREGS, OREGS, IFLAGS, OFLAGS, DFLAGS, insn_##NAME},
-
 xo_instruction xo_insns[] =
 {
-#include "insns.def"
+  // binary arithmetic
+  {"add", 2, R0|R1, R0, 0,  CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF}, // imm
+  {"adc", 2, R0|R1, R0, CF, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF}, // imm
+  {"sub", 2, R0|R1, R0, 0,  CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF}, // imm
+  {"sbb", 2, R0|R1, R0, CF, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF}, // imm
+  {"cmp", 2, R0|R1, 0,  0,  CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF}, // imm
+  {"inc", 1, R0,    R0, 0,  OF|PF|SF|ZF,    OF|PF|SF|ZF},
+  {"dec", 1, R0,    R0, 0,  OF|PF|SF|ZF,    OF|PF|SF|ZF},
+
+  // logic
+  {"and", 2, R0|R1, R0, 0, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF}, // imm
+  {"or",  2, R0|R1, R0, 0, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF}, // imm
+  {"xor", 2, R0|R1, R0, 0, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF}, // imm
+  {"not", 1, R0,    R0, 0, 0,              0},
+
+  // flag control
+  {"stc", 0, 0, 0, 0,  CF, CF},
+  {"clc", 0, 0, 0, 0,  CF, CF},
+  {"cmc", 0, 0, 0, CF, CF, CF},
+
+  // move
+  {"mov", 2, R1, R0, 0, 0, 0}, // imm
+
+  // conditional move
+  {"cmovc",  2, R0|R1, R0, CF,       0, 0},
+  {"cmovo",  2, R0|R1, R0, OF,       0, 0},
+  {"cmovp",  2, R0|R1, R0, PF,       0, 0},
+  {"cmovs",  2, R0|R1, R0, SF,       0, 0},
+  {"cmovz",  2, R0|R1, R0, ZF,       0, 0},
+  {"cmovnc", 2, R0|R1, R0, CF,       0, 0},
+  {"cmovno", 2, R0|R1, R0, OF,       0, 0},
+  {"cmovnp", 2, R0|R1, R0, PF,       0, 0},
+  {"cmovns", 2, R0|R1, R0, SF,       0, 0},
+  {"cmovnz", 2, R0|R1, R0, ZF,       0, 0},
+  {"cmova",  2, R0|R1, R0, CF|ZF,    0, 0}, // above, unsigned
+  {"cmovbe", 2, R0|R1, R0, CF|ZF,    0, 0}, // below or equal, unsigned
+  {"cmovg",  2, R0|R1, R0, OF|SF|ZF, 0, 0}, // greater, signed
+  {"cmovge", 2, R0|R1, R0, OF|SF,    0, 0}, // greater or equal, signed
+  {"cmovl",  2, R0|R1, R0, OF|SF,    0, 0}, // less, signed
+  {"cmovle", 2, R0|R1, R0, OF|SF|ZF, 0, 0}, // less or equal, signed
+
+  // other cmov forms:
+  // ae=nc, b=c, na=be, nae=c, nb=nc, nbe=a
+  // ng=le, nge=l, nl=ge, nle=g
+  // e=z, ne=zf
+  // pe=p, po=np
 };
 
-#undef INSN
-
-#undef DST
-#undef SRC
+#undef R0
+#undef R1
 
 #undef CF
 #undef OF

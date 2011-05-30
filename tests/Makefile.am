@@ -19,7 +19,6 @@ SOURCES = \
           ../src/generator.c \
           ../src/generator.h \
           ../src/insns.c \
-          ../src/insns.def \
           ../src/insns.h \
           ../src/instruction.c \
           ../src/instruction.h \

@@ -19,18 +19,15 @@ typedef struct
 
 // instruction
 
-typedef void (*xo_instruction_impl)(xo_machine_state *, size_t, size_t);
-
 typedef struct
 {
-  char *name;
+  const char *name;
   size_t arity;
   xo_register_set input_regs;
   xo_register_set output_regs;
   xo_flag_set input_flags;
   xo_flag_set output_flags;
   xo_flag_set live_output_flags;
-  xo_instruction_impl impl;
 } xo_instruction;
 
 // invocation

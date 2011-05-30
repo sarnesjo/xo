@@ -14,7 +14,7 @@ bool xo_invocation_equal(const xo_invocation *inv1, const xo_invocation *inv2)
 
 void xo_invocation_invoke(const xo_invocation *inv, xo_machine_state *st)
 {
-  inv->insn->impl(st, inv->r0, inv->r1);
+  // TODO: inv->insn->impl(st, inv->r0, inv->r1);
 }
 
 void xo_invocation_print(FILE *file, const xo_invocation *inv, const char *suffix)

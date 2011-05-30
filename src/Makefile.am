@@ -7,7 +7,6 @@ xo_SOURCES = \
              generator.c \
              generator.h \
              insns.c \
-             insns.def \
              insns.h \
              instruction.c \
              instruction.h \
