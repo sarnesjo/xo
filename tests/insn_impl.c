@@ -1,5 +1,5 @@
 #include "check.h"
-#include "../src/bdd_wrapper.hpp"
+#include "../src/equivalence_checker_bdd.h"
 #include "../src/equivalence_checker_c.h"
 #include "../src/flag_set.h"
 #include "../src/machine_state.h"
@@ -28,7 +28,7 @@ static bool expected_output(const char *input_prog_str,
 
 #elif XO_TEST_BDD
 
-  xo_bdd_evaluate_program_on_state(prog, &st);
+  xo_equivalence_checker_bdd_evaluate_program_on_state(prog, &st);
 
 #else
 #error

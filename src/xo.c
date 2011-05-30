@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "bdd_wrapper.hpp"
+#include "equivalence_checker_bdd.h"
 #include "equivalence_checker_c.h"
 #include "generator.h"
 #include "insns.h"
@@ -26,7 +26,7 @@ void did_generate_program(const xo_program *program, xo_register_set input_regs,
   {
     xo_program_print(stdout, program, "?\n");
 
-    if(xo_bdd_equivalent_programs(goal_program, program))
+    if(xo_equivalence_checker_bdd_programs_equivalent(goal_program, program))
       xo_program_print(stdout, program, "!\n");
   }
 }

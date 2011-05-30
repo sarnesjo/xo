@@ -1,5 +1,5 @@
 #include <bdd.h>
-#include "bdd_wrapper.hpp"
+#include "equivalence_checker_bdd.h"
 
 // TODO: use defs from types.h?
 #define NUM_BITS 32
@@ -381,7 +381,7 @@ static void evaluate_program_(const xo_program *prog, bdd r[XO_NUM_REGISTERS][NU
   }
 }
 
-void xo_bdd_evaluate_program_on_state(const xo_program *prog, xo_machine_state *st)
+void xo_equivalence_checker_bdd_evaluate_program_on_state(const xo_program *prog, xo_machine_state *st)
 {
   bdd_init(1000, 100); // TODO: good values?
 
@@ -400,7 +400,7 @@ void xo_bdd_evaluate_program_on_state(const xo_program *prog, xo_machine_state *
   bdd_done();
 }
 
-bool xo_bdd_equivalent_programs(const xo_program *prog1, const xo_program *prog2)
+bool xo_equivalence_checker_bdd_programs_equivalent(const xo_program *prog1, const xo_program *prog2)
 {
   xo_register_set ro_set_1, ro_set_2;
 

@@ -12,8 +12,8 @@ check_PROGRAMS = \
 
 SOURCES = \
           check.h \
-          ../src/bdd_wrapper.cpp \
-          ../src/bdd_wrapper.hpp \
+          ../src/equivalence_checker_bdd.cpp \
+          ../src/equivalence_checker_bdd.h \
           ../src/equivalence_checker_c.c \
           ../src/equivalence_checker_c.h \
           ../src/flag_set.c \

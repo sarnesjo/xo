@@ -1,7 +1,7 @@
 bin_PROGRAMS = xo
 xo_SOURCES = \
-             bdd_wrapper.cpp \
-             bdd_wrapper.hpp \
+             equivalence_checker_bdd.cpp \
+             equivalence_checker_bdd.h \
              equivalence_checker_c.c \
              equivalence_checker_c.h \
              flag_set.c \
