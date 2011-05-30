@@ -18,7 +18,7 @@ typedef struct
   bool did_generate_prog;
 } test_userdata;
 
-static void did_generate_prog(const xo_program *prog, xo_register_set input_regs, xo_register_set output_regs, void *userdata)
+static void did_generate_prog(const xo_program *prog, void *userdata)
 {
   test_userdata *tu = userdata;
   if(xo_program_equal(prog, tu->prog))

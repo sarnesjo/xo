@@ -20,7 +20,7 @@ typedef enum
 
 static int verbosity_ = 0;
 
-static void did_generate_program_(const xo_program *program, xo_register_set input_regs, xo_register_set output_regs, void *userdata)
+static void did_generate_program_(const xo_program *program, void *userdata)
 {
   xo_program *input_program = userdata;
 

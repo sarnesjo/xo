@@ -35,7 +35,7 @@ void generate_(xo_program *prog, size_t inv,
           if(live_regs & xo_register_set_from_index(r0))
           {
             xo_invocation_init(&prog->invocations[inv], insn, r0, XO_REGISTER_NONE);
-            callback(prog, input_regs, output_regs, userdata);
+            callback(prog, userdata);
           }
           break;
         case 2:
@@ -49,7 +49,7 @@ void generate_(xo_program *prog, size_t inv,
               if(live_regs & xo_register_set_from_index(r1))
               {
                 xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
-                callback(prog, input_regs, output_regs, userdata);
+                callback(prog, userdata);
               }
             }
           }
@@ -60,7 +60,7 @@ void generate_(xo_program *prog, size_t inv,
             if((strcmp(insn->name, "sub") == 0) || (strcmp(insn->name, "sbb") == 0) || (strcmp(insn->name, "xor") == 0))
             {
               xo_invocation_init(&prog->invocations[inv], insn, r0, r0);
-              callback(prog, input_regs, output_regs, userdata);
+              callback(prog, userdata);
             }
 
             if(live_regs & xo_register_set_from_index(r0))
@@ -74,7 +74,7 @@ void generate_(xo_program *prog, size_t inv,
                 if(live_regs & xo_register_set_from_index(r1))
                 {
                   xo_invocation_init(&prog->invocations[inv], insn, r0, r1);
-                  callback(prog, input_regs, output_regs, userdata);
+                  callback(prog, userdata);
                 }
               }
             }
