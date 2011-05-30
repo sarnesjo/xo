@@ -21,6 +21,7 @@ typedef struct
 
 typedef struct
 {
+  const int id;
   const char *name;
   size_t arity;
   xo_register_set input_regs;

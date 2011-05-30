@@ -1,4 +1,5 @@
 #include "equivalence_checker_c.h"
+#include "insns.h"
 #include "instruction.h"
 #include "machine_state.h"
 
@@ -204,84 +205,57 @@ CMOV(le, ZF || SF != OF)
 
 #undef CMOV
 
+typedef void (*c_impl_)(xo_machine_state *, size_t, size_t);
+
+c_impl_ impl_for_insn_(const xo_instruction *insn)
+{
+  static c_impl_ impls[XO_NUM_INSNS];
+
+  impls[XO_INSN_ADD] = insn_add_;
+  impls[XO_INSN_ADC] = insn_adc_;
+  impls[XO_INSN_SUB] = insn_sub_;
+  impls[XO_INSN_SBB] = insn_sbb_;
+  impls[XO_INSN_CMP] = insn_cmp_;
+  impls[XO_INSN_INC] = insn_inc_;
+  impls[XO_INSN_DEC] = insn_dec_;
+
+  impls[XO_INSN_AND] = insn_and_;
+  impls[XO_INSN_OR]  = insn_or_;
+  impls[XO_INSN_XOR] = insn_xor_;
+  impls[XO_INSN_NOT] = insn_not_;
+
+  impls[XO_INSN_STC] = insn_stc_;
+  impls[XO_INSN_CLC] = insn_clc_;
+  impls[XO_INSN_CMC] = insn_cmc_;
+
+  impls[XO_INSN_MOV] = insn_mov_;
+
+  impls[XO_INSN_CMOVC]  = insn_cmovc_;
+  impls[XO_INSN_CMOVO]  = insn_cmovo_;
+  impls[XO_INSN_CMOVP]  = insn_cmovp_;
+  impls[XO_INSN_CMOVS]  = insn_cmovs_;
+  impls[XO_INSN_CMOVZ]  = insn_cmovz_;
+  impls[XO_INSN_CMOVNC] = insn_cmovnc_;
+  impls[XO_INSN_CMOVNO] = insn_cmovno_;
+  impls[XO_INSN_CMOVNP] = insn_cmovnp_;
+  impls[XO_INSN_CMOVNS] = insn_cmovns_;
+  impls[XO_INSN_CMOVNZ] = insn_cmovnz_;
+  impls[XO_INSN_CMOVA]  = insn_cmova_;
+  impls[XO_INSN_CMOVBE] = insn_cmovbe_;
+  impls[XO_INSN_CMOVG]  = insn_cmovg_;
+  impls[XO_INSN_CMOVGE] = insn_cmovge_;
+  impls[XO_INSN_CMOVL]  = insn_cmovl_;
+  impls[XO_INSN_CMOVLE] = insn_cmovle_;
+
+  return impls[insn->id];
+}
+
 void xo_equivalence_checker_c_run_program_on_state(const xo_program *prog, xo_machine_state *st)
 {
-  // TODO: better way to look up insns...
-
   for(size_t i = 0; i < prog->num_invocations; ++i)
   {
     xo_invocation *inv = &prog->invocations[i];
-    void (*impl)(xo_machine_state *, size_t, size_t) = NULL;
-
-    if(inv->insn == xo_instruction_get("add"))
-      impl = insn_add_;
-    else if(inv->insn == xo_instruction_get("adc"))
-      impl = insn_adc_;
-    else if(inv->insn == xo_instruction_get("sub"))
-      impl = insn_sub_;
-    else if(inv->insn == xo_instruction_get("sbb"))
-      impl = insn_sbb_;
-    else if(inv->insn == xo_instruction_get("cmp"))
-      impl = insn_cmp_;
-    else if(inv->insn == xo_instruction_get("inc"))
-      impl = insn_inc_;
-    else if(inv->insn == xo_instruction_get("dec"))
-      impl = insn_dec_;
-
-    else if(inv->insn == xo_instruction_get("and"))
-      impl = insn_and_;
-    else if(inv->insn == xo_instruction_get("or"))
-      impl = insn_or_;
-    else if(inv->insn == xo_instruction_get("xor"))
-      impl = insn_xor_;
-    else if(inv->insn == xo_instruction_get("not"))
-      impl = insn_not_;
-
-    else if(inv->insn == xo_instruction_get("stc"))
-      impl = insn_stc_;
-    else if(inv->insn == xo_instruction_get("clc"))
-      impl = insn_clc_;
-    else if(inv->insn == xo_instruction_get("cmc"))
-      impl = insn_cmc_;
-
-    else if(inv->insn == xo_instruction_get("mov"))
-      impl = insn_mov_;
-
-    else if(inv->insn == xo_instruction_get("cmovc"))
-      impl = insn_cmovc_;
-    else if(inv->insn == xo_instruction_get("cmovo"))
-      impl = insn_cmovo_;
-    else if(inv->insn == xo_instruction_get("cmovp"))
-      impl = insn_cmovp_;
-    else if(inv->insn == xo_instruction_get("cmovs"))
-      impl = insn_cmovs_;
-    else if(inv->insn == xo_instruction_get("cmovz"))
-      impl = insn_cmovz_;
-
-    else if(inv->insn == xo_instruction_get("cmovnc"))
-      impl = insn_cmovnc_;
-    else if(inv->insn == xo_instruction_get("cmovno"))
-      impl = insn_cmovno_;
-    else if(inv->insn == xo_instruction_get("cmovnp"))
-      impl = insn_cmovnp_;
-    else if(inv->insn == xo_instruction_get("cmovns"))
-      impl = insn_cmovns_;
-    else if(inv->insn == xo_instruction_get("cmovnz"))
-      impl = insn_cmovnz_;
-
-    else if(inv->insn == xo_instruction_get("cmova"))
-      impl = insn_cmova_;
-    else if(inv->insn == xo_instruction_get("cmovbe"))
-      impl = insn_cmovbe_;
-    else if(inv->insn == xo_instruction_get("cmovg"))
-      impl = insn_cmovg_;
-    else if(inv->insn == xo_instruction_get("cmovge"))
-      impl = insn_cmovge_;
-    else if(inv->insn == xo_instruction_get("cmovl"))
-      impl = insn_cmovl_;
-    else if(inv->insn == xo_instruction_get("cmovle"))
-      impl = insn_cmovle_;
-
+    c_impl_ impl = impl_for_insn_(inv->insn); // TODO: check for NULL
     impl(st, inv->r0, inv->r1);
   }
 }

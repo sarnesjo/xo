@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "insns.h"
 #include "instruction.h"
 #include "program.h"
 #include "register_set.h"
