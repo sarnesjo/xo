@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "equivalence_checker_c.h"
 #include "insns.h"
 #include "instruction.h"
@@ -257,7 +258,12 @@ void xo_equivalence_checker_c_run_program_on_state(const xo_program *prog, xo_ma
   for(size_t i = 0; i < prog->num_invocations; ++i)
   {
     xo_invocation *inv = &prog->invocations[i];
-    c_impl_ impl = impl_for_insn_(inv->insn); // TODO: check for NULL
+    c_impl_ impl = impl_for_insn_(inv->insn);
+    if(!impl)
+    {
+      fprintf(stderr, "unknown instruction: '%s'\n", inv->insn->name);
+      return;
+    }
     impl(st, inv->r0, inv->r1);
   }
 }
@@ -279,7 +285,7 @@ bool xo_equivalence_checker_c_programs_equivalent_on_states(const xo_program *pr
   xo_program_analyze(prog2, NULL, &ro_set_2);
 
   if(ro_set_1 != ro_set_2)
-    return false; // TODO: signal error?
+    return false;
 
   size_t ro_index = xo_register_set_first_live_index(ro_set_1);
 

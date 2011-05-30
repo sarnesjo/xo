@@ -1,17 +1,17 @@
 #include <bdd.h>
+#include <stdio.h>
 #include "equivalence_checker_bdd.h"
 
 // TODO: much of this code assumes that XO_NUM_BITS == 32
 
 // converting BDDs to and from register and flag values
 
+// every value in a should be bdd_true or bdd_false
 static xo_register bdd_to_register_(const bdd a[XO_NUM_BITS])
 {
   xo_register r = 0;
   for(int i = 0; i < XO_NUM_BITS; ++i)
-    if(!(a[i] == bdd_true() || a[i] == bdd_false()))
-      abort(); // TODO: warn if neither bdd_true nor bdd_false?
-    else if(a[i] == bdd_true())
+    if(a[i] == bdd_true())
       r |= (1 << i);
   return r;
 }
@@ -22,13 +22,12 @@ static void bdd_from_register_(bdd a[XO_NUM_BITS], xo_register r)
     a[i] = (r & (1 << i)) ? bdd_true() : bdd_false();
 }
 
+// every value in a should be bdd_true or bdd_false
 static xo_flag_set bdd_to_flag_set_(const bdd a[XO_NUM_FLAGS])
 {
   xo_flag_set s = 0;
   for(int i = 0; i < XO_NUM_FLAGS; ++i)
-    if(!(a[i] == bdd_true() || a[i] == bdd_false()))
-      abort(); // TODO: warn if neither bdd_true nor bdd_false?
-    else if(a[i] == bdd_true())
+    if(a[i] == bdd_true())
       s |= (1 << i);
   return s;
 }
@@ -346,7 +345,12 @@ static void evaluate_program_(const xo_program *prog, bdd r[XO_NUM_REGISTERS][XO
   for(size_t i = 0; i < prog->num_invocations; ++i)
   {
     xo_invocation *inv = &prog->invocations[i];
-    bdd_impl_ impl = impl_for_insn_(inv->insn); // TODO: check for NULL
+    bdd_impl_ impl = impl_for_insn_(inv->insn);
+    if(!impl)
+    {
+      fprintf(stderr, "unknown instruction: '%s'\n", inv->insn->name);
+      return;
+    }
     impl(r[inv->r0], r[inv->r1], f);
   }
 }
