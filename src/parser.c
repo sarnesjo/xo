@@ -5,7 +5,7 @@
 
 static bool insn_(const char *input, const char **remaining_input, xo_instruction **out_insn, size_t *out_r0, size_t *out_r1)
 {
-  char buf[8]; // TODO: define max insn name length (to 7) somewhere
+  char buf[8]; // assumes insn names are at most 7 chars long
   size_t r0 = XO_REGISTER_NONE, r1 = XO_REGISTER_NONE;
   int num_chars_consumed = 0;
 
@@ -20,9 +20,11 @@ static bool insn_(const char *input, const char **remaining_input, xo_instructio
 
   if(insn->arity >= 1)
   {
-    if(sscanf(input, " r%1[0-7]%n", buf, &num_chars_consumed) != 1)
+    if(sscanf(input, " r%7[0-9]%n", buf, &num_chars_consumed) != 1)
       return false;
     r0 = strtol(buf, NULL, 0);
+    if(r0 >= XO_NUM_REGISTERS)
+      return false;
     input += num_chars_consumed;
   }
 
@@ -32,9 +34,11 @@ static bool insn_(const char *input, const char **remaining_input, xo_instructio
       return false;
     input += num_chars_consumed;
 
-    if(sscanf(input, " r%1[0-7]%n", buf, &num_chars_consumed) != 1)
+    if(sscanf(input, " r%7[0-9]%n", buf, &num_chars_consumed) != 1)
       return false;
     r1 = strtol(buf, NULL, 0);
+    if(r1 >= XO_NUM_REGISTERS)
+      return false;
     input += num_chars_consumed;
   }
 

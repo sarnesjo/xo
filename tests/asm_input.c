@@ -16,7 +16,7 @@ int main()
   // require semicolon
   CHECK(!xo_parser_validate("add r0,r1"));
 
-  // require args to be named r[0-7]
+  // require args to be named r[0-7] (assumes XO_NUM_REGISTERS == 8)
   CHECK(xo_parser_validate("add r0,r1;"));
   CHECK(xo_parser_validate("add r2,r3;"));
   CHECK(xo_parser_validate("add r4,r5;"));
