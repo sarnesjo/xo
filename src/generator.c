@@ -27,8 +27,6 @@ void generate_(xo_program *prog, size_t inv,
       if((live_flags & insn->input_flags) != insn->input_flags)
         continue;
 
-      xo_flag_set new_live_flags = ((~insn->output_flags & live_flags) | (insn->output_flags & insn->live_output_flags));
-
       size_t r0 = xo_register_set_first_live_index(output_regs);
 
       switch(insn->arity)
