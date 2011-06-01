@@ -1,1 +1,2 @@
+EXTRA_DIST = UNLICENSE
 SUBDIRS = src tests
