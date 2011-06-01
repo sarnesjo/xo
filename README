@@ -100,6 +100,11 @@ xo is a prototype, and has numerous shortcomings:
   are not cached.
 * The code for the generator is a mess.
 
+## License
+
+xo is free and unencumbered software released into the public domain. See
+UNLICENSE for details.
+
 ## Author
 
 xo was created by Jesper Särnesjö, as part of a degree project at KTH.
