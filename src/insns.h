@@ -44,6 +44,8 @@ enum
   XO_NUM_INSNS
 };
 
+#define XO_INSN_ID_IS_CMOV(INSN_ID) ((INSN_ID) >= XO_INSN_CMOVC && (INSN_ID) <= XO_INSN_CMOVLE)
+
 extern xo_instruction xo_insns[XO_NUM_INSNS];
 
 #endif

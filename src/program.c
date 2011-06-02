@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <string.h>
+#include "insns.h"
 #include "invocation.h"
 #include "machine_state.h"
 #include "parser.h"
@@ -59,14 +59,14 @@ void xo_program_analyze(const xo_program *prog, xo_register_set *input_regs, xo_
   for(size_t i = 0; i < prog->num_invocations; ++i)
   {
     xo_invocation *inv = &prog->invocations[i];
-    const char *insn_name = inv->insn->name;
+    const xo_instruction *insn = inv->insn;
     size_t r0 = inv->r0;
     size_t r1 = inv->r1;
 
     // TODO: this information should be stored in instruction
-    bool no_i = (strcmp(insn_name, "sbb") == 0 || strcmp(insn_name, "sub") == 0 || strcmp(insn_name, "xor") == 0) && (r0 == r1);
-    bool no_o = strcmp(insn_name, "cmp") == 0;
-    bool o_not_i = strcmp(insn_name, "mov") == 0;
+    bool no_i = (insn->id == XO_INSN_SUB || insn->id == XO_INSN_SBB || insn->id == XO_INSN_XOR) && (r0 == r1);
+    bool no_o = insn->id == XO_INSN_CMP;
+    bool o_not_i = insn->id == XO_INSN_MOV;
 
     if(r0 != XO_REGISTER_NONE && ((written_regs & (1 << r0)) == 0) && !no_i && !o_not_i)
       iregs |= 1 << r0;
