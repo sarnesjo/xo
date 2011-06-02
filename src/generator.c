@@ -1,4 +1,3 @@
-#include <string.h>
 #include "generator.h"
 #include "insns.h"
 #include "invocation.h"
@@ -39,7 +38,7 @@ void generate_(xo_program *prog, size_t inv,
           }
           break;
         case 2:
-          if(strcmp(insn->name, "mov") == 0)
+          if(insn->id == XO_INSN_MOV)
           {
             for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
             {
@@ -57,7 +56,7 @@ void generate_(xo_program *prog, size_t inv,
           {
             // sub/sbb/xor can be invoked with a non-live register if r0 == r1
             // TODO: we should not call generate sub/sbb/xor with r0 == r1 normally (see comment about cmov below)
-            if((strcmp(insn->name, "sub") == 0) || (strcmp(insn->name, "sbb") == 0) || (strcmp(insn->name, "xor") == 0))
+            if(insn->id == XO_INSN_SUB || insn->id == XO_INSN_SBB || insn->id == XO_INSN_XOR)
             {
               xo_invocation_init(&prog->invocations[inv], insn, r0, r0);
               callback(prog, userdata);
@@ -68,7 +67,7 @@ void generate_(xo_program *prog, size_t inv,
               for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
               {
                 // cmov should never be invoked with r0 == r1
-                if((r0 == r1) && (strstr(insn->name, "cmov") == insn->name))
+                if((r0 == r1) && XO_INSN_ID_IS_CMOV(insn->id))
                   continue;
 
                 if(live_regs & xo_register_set_from_index(r1))
@@ -112,7 +111,7 @@ void generate_(xo_program *prog, size_t inv,
           }
           break;
         case 2:
-          if(strcmp(insn->name, "mov") == 0)
+          if(insn->id == XO_INSN_MOV)
           {
             // mov should always write to a dead register...
             {
@@ -152,7 +151,7 @@ void generate_(xo_program *prog, size_t inv,
           {
             // sub/sbb/xor can be invoked with a non-live register if r0 == r1
             // TODO: we should not call generate sub/sbb/xor with r0 == r1 normally (see comment about cmov below)
-            if((strcmp(insn->name, "sub") == 0) || (strcmp(insn->name, "sbb") == 0) || (strcmp(insn->name, "xor") == 0))
+            if(insn->id == XO_INSN_SUB || insn->id == XO_INSN_SBB || insn->id == XO_INSN_XOR)
             {
               size_t r0 = xo_register_set_first_dead_index(live_regs); // TODO: what if all regs are live?
 
@@ -167,7 +166,7 @@ void generate_(xo_program *prog, size_t inv,
                 for(size_t r1 = 0; r1 < XO_NUM_REGISTERS; ++r1)
                 {
                   // cmov should never be invoked with r0 == r1
-                  if((r0 == r1) && (strstr(insn->name, "cmov") == insn->name))
+                  if((r0 == r1) && XO_INSN_ID_IS_CMOV(insn->id))
                     continue;
 
                   if(live_regs & xo_register_set_from_index(r1))
