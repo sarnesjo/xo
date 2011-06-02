@@ -1,4 +1,4 @@
-AC_INIT(xo, 0.1.0)
+AC_INIT(xo, 0.1.1)
 AM_INIT_AUTOMAKE(foreign)
 
 AC_CHECK_LIB([bdd], [bdd_init], [], [AC_MSG_ERROR([bdd not found!])])
