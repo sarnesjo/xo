@@ -90,8 +90,8 @@ Example:
 
 xo is a prototype, and has numerous shortcomings:
 
-* Support for many important instructions, such as neg, mul and lea, as well as
-  shift and rotate instructions, is missing.
+* Support for many important instructions, such as mul and lea, as well as shift
+  and rotate instructions, is missing.
 * Immediate values are not supported.
 * Multiple output registers are not supported. The output register is assumed to
   be the last register written to.
