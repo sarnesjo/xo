@@ -12,6 +12,7 @@ enum
   XO_INSN_CMP,
   XO_INSN_INC,
   XO_INSN_DEC,
+  XO_INSN_NEG,
 
   XO_INSN_AND,
   XO_INSN_OR,

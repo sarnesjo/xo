@@ -25,6 +25,7 @@ xo_instruction xo_insns[] =
   {XO_INSN_CMP, "cmp", 2, R0|R1, 0,  0,  CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF}, // imm
   {XO_INSN_INC, "inc", 1, R0,    R0, 0,  OF|PF|SF|ZF,    OF|PF|SF|ZF},
   {XO_INSN_DEC, "dec", 1, R0,    R0, 0,  OF|PF|SF|ZF,    OF|PF|SF|ZF},
+  {XO_INSN_NEG, "neg", 1, R0,    R0, 0,  CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF},
 
   // logic
   {XO_INSN_AND, "and", 2, R0|R1, R0, 0, CF|OF|PF|SF|ZF, CF|OF|PF|SF|ZF}, // imm

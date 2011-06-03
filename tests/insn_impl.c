@@ -92,6 +92,11 @@ int main()
   CHECK(expected_output("dec r0;",       0x80000000, 0x00000000, 0,  0x7fffffff, OF|PF));
   CHECK(expected_output("dec r0;",       0x80000000, 0x00000000, CF, 0x7fffffff, CF|OF|PF));
 
+  CHECK(expected_output("neg r0;",       0x00000000, 0x00000000, 0,  0x00000000, PF|ZF));
+  CHECK(expected_output("neg r0;",       0x00000001, 0x00000000, 0,  0xffffffff, CF|PF|SF));
+  CHECK(expected_output("neg r0;",       0xffffffff, 0x00000000, 0,  0x00000001, CF));
+  CHECK(expected_output("neg r0;",       0x80000000, 0x00000000, 0,  0x80000000, CF|OF|PF|SF));
+
   // logic
 
   CHECK(expected_output("and r0,r1;",    0x00000000, 0x00000000, 0,              0x00000000, PF|ZF));
