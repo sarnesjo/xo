@@ -167,13 +167,13 @@ static void insn_inc_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLA
 {
   bdd c[XO_NUM_BITS];
 
-  c[0] = r0[0] & bdd_true();
-  r0[0] = r0[0] ^ bdd_true();
+  c[0] = r0[0];
+  r0[0] = !r0[0];
 
   for(int i = 1; i < XO_NUM_BITS; ++i)
   {
-    c[i] = r0[i] & bdd_false() | r0[i] & c[i-1] | bdd_false() & c[i-1];
-    r0[i] = r0[i] ^ bdd_false() ^ c[i-1];
+    c[i] = r0[i] & c[i-1];
+    r0[i] = r0[i] ^ c[i-1];
   }
 
   f[1] = c[30] ^ c[31];
@@ -186,13 +186,13 @@ static void insn_dec_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLA
 {
   bdd c[XO_NUM_BITS];
 
-  c[0] = !r0[0] & bdd_true();
-  r0[0] = r0[0] ^ bdd_true();
+  c[0] = !r0[0];
+  r0[0] = !r0[0];
 
   for(int i = 1; i < XO_NUM_BITS; ++i)
   {
-    c[i] = !r0[i] & bdd_false() | !r0[i] & c[i-1] | bdd_false() & c[i-1];
-    r0[i] = r0[i] ^ bdd_false() ^ c[i-1];
+    c[i] = !r0[i] & c[i-1];
+    r0[i] = r0[i] ^ c[i-1];
   }
 
   f[1] = c[30] ^ c[31];
