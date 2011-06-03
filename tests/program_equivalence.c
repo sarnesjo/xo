@@ -34,6 +34,7 @@ int main()
   CHECK(equivalent("sub r0,r1;", "sub r0,r1;"));
   CHECK(equivalent("inc r0;",    "inc r0;"));
   CHECK(equivalent("dec r0;",    "dec r0;"));
+  CHECK(equivalent("neg r0;",    "neg r0;"));
   CHECK(equivalent("and r0,r1;", "and r0,r1;"));
   CHECK(equivalent("or  r0,r1;", "or  r0,r1;"));
   CHECK(equivalent("xor r0,r1;", "xor r0,r1;"));
@@ -45,6 +46,7 @@ int main()
   CHECK(!equivalent("sub r0,r1;", "sub r1,r0;"));
   CHECK(!equivalent("inc r0;",    "inc r1;"));
   CHECK(!equivalent("dec r0;",    "dec r1;"));
+  CHECK(!equivalent("neg r0;",    "neg r1;"));
   CHECK(!equivalent("and r0,r1;", "and r1,r0;"));
   CHECK(!equivalent("or  r0,r1;", "or  r1,r0;"));
   CHECK(!equivalent("xor r0,r1;", "xor r1,r0;"));
@@ -91,6 +93,10 @@ int main()
   // an incorrect variant of the sign program, which misbehaves when r3 == 0
   CHECK(!equivalent("xor r0,r0; xor r1,r1; xor r2,r2; inc r1; dec r2; cmp r3,r0; cmovg r3,r1; cmovl r3,r2;",
         "add r3,r3; sbb r3,r3; add r3,r3; inc r3;"));
+
+  // -x is equivalent to 0-x
+  CHECK(equivalent("neg r0;", "mov r1,r0; xor r0,r0; sub r0,r1;"));
+  CHECK(equivalent("mov r1,r0; neg r1;", "xor r1,r1; sub r1,r0;"));
 
   return EXIT_SUCCESS;
 }
