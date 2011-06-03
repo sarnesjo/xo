@@ -201,6 +201,26 @@ static void insn_dec_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLA
   f[4] = zf_(r0);
 }
 
+static void insn_neg_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
+{
+  bdd c[XO_NUM_BITS];
+
+  c[0] = !r0[0];
+  r0[0] = r0[0];
+
+  for(int i = 1; i < XO_NUM_BITS; ++i)
+  {
+    c[i] = !r0[i] & c[i-1];
+    r0[i] = !r0[i] ^ c[i-1];
+  }
+
+  f[0] = !zf_(r0);
+  f[1] = c[30] ^ c[31];
+  f[2] = pf_(r0);
+  f[3] = sf_(r0);
+  f[4] = zf_(r0);
+}
+
 static void insn_and_(bdd r0[XO_NUM_BITS], bdd r1[XO_NUM_BITS], bdd f[XO_NUM_FLAGS])
 {
   for(int i = 0; i < XO_NUM_BITS; ++i)
@@ -308,6 +328,7 @@ bdd_impl_ impl_for_insn_(const xo_instruction *insn)
   impls[XO_INSN_CMP] = insn_cmp_;
   impls[XO_INSN_INC] = insn_inc_;
   impls[XO_INSN_DEC] = insn_dec_;
+  impls[XO_INSN_NEG] = insn_neg_;
 
   impls[XO_INSN_AND] = insn_and_;
   impls[XO_INSN_OR]  = insn_or_;
