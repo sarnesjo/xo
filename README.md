@@ -16,7 +16,7 @@ To install xo, do the following:
 This only applies if you've fetched the code from the development repository,
 not if you've obtained it by downloading a release version.
 
-    ./configure CPPFLAGS='-I/path/to/bdd/include -L/path/to/bdd/lib' LDFLAGS='-L/path/to/bdd/lib'
+    ./configure CPPFLAGS='-I/path/to/bdd/include' LDFLAGS='-L/path/to/bdd/lib'
 
 Passing CPPFLAGS and LDFLAGS is only required if you've installed BuDDy in a
 non-standard location.
