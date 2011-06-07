@@ -2,7 +2,6 @@
 #include "insns.h"
 
 // TODO: implement mul, imul? cf/of: !!(result & 0xffff0000)
-// TODO: implement neg
 // TODO: implement lea
 // TODO: implement rotate and shift insns
 
