@@ -41,6 +41,7 @@ int main()
   // unary insns
   CHECK(program_regs("dec r0;", R0, R0));
   CHECK(program_regs("inc r0;", R0, R0));
+  CHECK(program_regs("neg r0;", R0, R0));
   CHECK(program_regs("not r0;", R0, R0));
 
   // binary insns

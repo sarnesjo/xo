@@ -53,6 +53,7 @@ int main()
   CHECK(generates_self("sub r0,r1;"));
   CHECK(generates_self("inc r0;"));
   CHECK(generates_self("dec r0;"));
+  CHECK(generates_self("neg r0;"));
   CHECK(generates_self("and r0,r1;"));
   CHECK(generates_self("or  r0,r1;"));
   CHECK(generates_self("xor r0,r1;"));

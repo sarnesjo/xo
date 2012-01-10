@@ -16,7 +16,7 @@ To install xo, do the following:
 This only applies if you've fetched the code from the development repository,
 not if you've obtained it by downloading a release version.
 
-    ./configure CPPFLAGS='-I/path/to/bdd/include -L/path/to/bdd/lib' LDFLAGS='-L/path/to/bdd/lib'
+    ./configure CPPFLAGS='-I/path/to/bdd/include' LDFLAGS='-L/path/to/bdd/lib'
 
 Passing CPPFLAGS and LDFLAGS is only required if you've installed BuDDy in a
 non-standard location.
@@ -90,8 +90,8 @@ Example:
 
 xo is a prototype, and has numerous shortcomings:
 
-* Support for many important instructions, such as neg, mul and lea, as well as
-  shift and rotate instructions, is missing.
+* Support for many important instructions, such as mul and lea, as well as shift
+  and rotate instructions, is missing.
 * Immediate values are not supported.
 * Multiple output registers are not supported. The output register is assumed to
   be the last register written to.

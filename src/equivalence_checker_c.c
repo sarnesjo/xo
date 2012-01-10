@@ -112,6 +112,17 @@ static void insn_dec_(xo_machine_state *st, size_t r0, size_t r1)
   xo_machine_state_set_zf(st, zf_(st->regs[r0]));
 }
 
+static void insn_neg_(xo_machine_state *st, size_t r0, size_t r1)
+{
+  st->regs[r0] = -st->regs[r0];
+
+  xo_machine_state_set_cf(st, st->regs[r0] != 0);
+  xo_machine_state_set_of(st, st->regs[r0] == 0x80000000);
+  xo_machine_state_set_pf(st, pf_(st->regs[r0]));
+  xo_machine_state_set_sf(st, sf_(st->regs[r0]));
+  xo_machine_state_set_zf(st, zf_(st->regs[r0]));
+}
+
 static void insn_and_(xo_machine_state *st, size_t r0, size_t r1)
 {
   st->regs[r0] &= st->regs[r1];
@@ -221,6 +232,7 @@ c_impl_ impl_for_insn_(const xo_instruction *insn)
   impls[XO_INSN_CMP] = insn_cmp_;
   impls[XO_INSN_INC] = insn_inc_;
   impls[XO_INSN_DEC] = insn_dec_;
+  impls[XO_INSN_NEG] = insn_neg_;
 
   impls[XO_INSN_AND] = insn_and_;
   impls[XO_INSN_OR]  = insn_or_;

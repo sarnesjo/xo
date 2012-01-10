@@ -11,6 +11,7 @@ int main()
   // unary insns
   CHECK(xo_parser_validate("dec r0;"));
   CHECK(xo_parser_validate("inc r0;"));
+  CHECK(xo_parser_validate("neg r0;"));
   CHECK(xo_parser_validate("not r0;"));
 
   // binary insns
